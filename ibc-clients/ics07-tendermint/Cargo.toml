@@ -19,6 +19,7 @@ all-features = true
 
 [dependencies]
 # external dependencies
+borsh      = { workspace = true, optional = true }
 derive_more = { workspace = true }
 serde       = { workspace = true, optional = true }
 
@@ -65,6 +66,7 @@ schema = [
   "std",
 ]
 borsh = [
+  "dep:borsh",
   "ibc-client-tendermint-types/borsh",
   "ibc-core-client/borsh",
   "ibc-core-commitment-types/borsh",

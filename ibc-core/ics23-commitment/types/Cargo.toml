@@ -24,6 +24,7 @@ arbitrary       = { workspace = true, optional = true }
 borsh           = { workspace = true, optional = true }
 derive_more     = { workspace = true, features = [ "as_ref" ] }
 displaydoc      = { workspace = true }
+prost           = { workspace = true, optional = true }
 schemars        = { workspace = true, optional = true }
 serde           = { workspace = true, optional = true }
 subtle-encoding = { workspace = true }
@@ -69,6 +70,7 @@ schema = [
 ]
 borsh = [
   "dep:borsh",
+  "dep:prost",
   "ibc-proto/borsh",
   "ibc-primitives/borsh",
   "ibc-core-host-types/borsh",

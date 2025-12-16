@@ -24,6 +24,10 @@ use crate::trust_threshold::TrustThreshold;
 
 pub const TENDERMINT_CLIENT_STATE_TYPE_URL: &str = "/ibc.lightclients.tendermint.v1.ClientState";
 
+#[cfg_attr(
+    feature = "borsh",
+    derive(borsh::BorshSerialize, borsh::BorshDeserialize)
+)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct AllowUpdate {
@@ -32,13 +36,38 @@ pub struct AllowUpdate {
 }
 
 /// Defines data structure for Tendermint client state.
+#[cfg_attr(
+    feature = "borsh",
+    derive(borsh::BorshSerialize, borsh::BorshDeserialize)
+)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug, PartialEq)]
 pub struct ClientState {
     pub chain_id: ChainId,
     pub trust_level: TrustThreshold,
+    #[cfg_attr(
+        feature = "borsh",
+        borsh(
+            serialize_with = "super::borsh::serialize_duration",
+            deserialize_with = "super::borsh::deserialize_duration"
+        )
+    )]
     pub trusting_period: Duration,
+    #[cfg_attr(
+        feature = "borsh",
+        borsh(
+            serialize_with = "super::borsh::serialize_duration",
+            deserialize_with = "super::borsh::deserialize_duration"
+        )
+    )]
     pub unbonding_period: Duration,
+    #[cfg_attr(
+        feature = "borsh",
+        borsh(
+            serialize_with = "super::borsh::serialize_duration",
+            deserialize_with = "super::borsh::deserialize_duration"
+        )
+    )]
     pub max_clock_drift: Duration,
     pub latest_height: Height,
     pub proof_specs: ProofSpecs,

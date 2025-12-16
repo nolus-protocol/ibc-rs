@@ -15,6 +15,7 @@
 #[cfg(feature = "std")]
 extern crate std;
 
+pub mod borsh;
 pub mod commitment;
 pub mod error;
 pub mod merkle;
