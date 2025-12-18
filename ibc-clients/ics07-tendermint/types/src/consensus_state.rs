@@ -18,11 +18,29 @@ pub const TENDERMINT_CONSENSUS_STATE_TYPE_URL: &str =
     "/ibc.lightclients.tendermint.v1.ConsensusState";
 
 /// Defines the Tendermint light client's consensus state
+#[cfg_attr(
+    feature = "borsh",
+    derive(borsh::BorshSerialize, borsh::BorshDeserialize)
+)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ConsensusState {
+    #[cfg_attr(
+        feature = "borsh",
+        borsh(
+            serialize_with = "super::borsh::serialize_time",
+            deserialize_with = "super::borsh::deserialize_time"
+        )
+    )]
     pub timestamp: Time,
     pub root: CommitmentRoot,
+    #[cfg_attr(
+        feature = "borsh",
+        borsh(
+            serialize_with = "super::borsh::serialize_hash",
+            deserialize_with = "super::borsh::deserialize_hash"
+        )
+    )]
     pub next_validators_hash: Hash,
 }
 
