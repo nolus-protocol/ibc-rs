@@ -5,10 +5,10 @@ use ibc_primitives::prelude::*;
 use tendermint::abci;
 
 /// Connection event types
-const CONNECTION_OPEN_INIT_EVENT: &str = "connection_open_init";
-const CONNECTION_OPEN_TRY_EVENT: &str = "connection_open_try";
-const CONNECTION_OPEN_ACK_EVENT: &str = "connection_open_ack";
-const CONNECTION_OPEN_CONFIRM_EVENT: &str = "connection_open_confirm";
+pub const CONNECTION_OPEN_INIT_EVENT: &str = "connection_open_init";
+pub const CONNECTION_OPEN_TRY_EVENT: &str = "connection_open_try";
+pub const CONNECTION_OPEN_ACK_EVENT: &str = "connection_open_ack";
+pub const CONNECTION_OPEN_CONFIRM_EVENT: &str = "connection_open_confirm";
 
 /// The content of the `key` field for the attribute containing the connection identifier.
 pub const CONN_ID_ATTRIBUTE_KEY: &str = "connection_id";

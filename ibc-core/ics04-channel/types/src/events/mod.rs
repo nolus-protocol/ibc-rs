@@ -27,20 +27,20 @@ use crate::timeout::TimeoutTimestamp;
 
 /// Channel event types corresponding to ibc-go's channel events:
 /// https://github.com/cosmos/ibc-go/blob/c4413c5877f9ef883494da1721cb18caaba7f7f5/modules/core/04-channel/types/events.go#L52-L72
-const CHANNEL_OPEN_INIT_EVENT: &str = "channel_open_init";
-const CHANNEL_OPEN_TRY_EVENT: &str = "channel_open_try";
-const CHANNEL_OPEN_ACK_EVENT: &str = "channel_open_ack";
-const CHANNEL_OPEN_CONFIRM_EVENT: &str = "channel_open_confirm";
-const CHANNEL_CLOSE_INIT_EVENT: &str = "channel_close_init";
-const CHANNEL_CLOSE_CONFIRM_EVENT: &str = "channel_close_confirm";
-const CHANNEL_CLOSED_EVENT: &str = "channel_close";
+pub const CHANNEL_OPEN_INIT_EVENT: &str = "channel_open_init";
+pub const CHANNEL_OPEN_TRY_EVENT: &str = "channel_open_try";
+pub const CHANNEL_OPEN_ACK_EVENT: &str = "channel_open_ack";
+pub const CHANNEL_OPEN_CONFIRM_EVENT: &str = "channel_open_confirm";
+pub const CHANNEL_CLOSE_INIT_EVENT: &str = "channel_close_init";
+pub const CHANNEL_CLOSE_CONFIRM_EVENT: &str = "channel_close_confirm";
+pub const CHANNEL_CLOSED_EVENT: &str = "channel_close";
 
 /// Packet event types
-const SEND_PACKET_EVENT: &str = "send_packet";
-const RECEIVE_PACKET_EVENT: &str = "recv_packet";
-const WRITE_ACK_EVENT: &str = "write_acknowledgement";
-const ACK_PACKET_EVENT: &str = "acknowledge_packet";
-const TIMEOUT_EVENT: &str = "timeout_packet";
+pub const SEND_PACKET_EVENT: &str = "send_packet";
+pub const RECEIVE_PACKET_EVENT: &str = "recv_packet";
+pub const WRITE_ACK_EVENT: &str = "write_acknowledgement";
+pub const ACK_PACKET_EVENT: &str = "acknowledge_packet";
+pub const TIMEOUT_EVENT: &str = "timeout_packet";
 
 #[cfg_attr(
     feature = "parity-scale-codec",
