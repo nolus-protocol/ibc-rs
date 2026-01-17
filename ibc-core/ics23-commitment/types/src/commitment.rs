@@ -12,6 +12,10 @@ use subtle_encoding::{Encoding, Hex};
 use super::merkle::MerkleProof;
 
 /// Encodes a commitment root; most often a Merkle tree root hash.
+#[cfg_attr(
+    feature = "borsh",
+    derive(borsh::BorshSerialize, borsh::BorshDeserialize)
+)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "serde", serde(transparent))]
 #[derive(Clone, PartialEq, Eq)]

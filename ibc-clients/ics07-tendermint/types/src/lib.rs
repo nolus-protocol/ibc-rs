@@ -20,6 +20,8 @@ use ibc_core_host_types::identifiers::ClientType;
 #[cfg(any(test, feature = "std"))]
 extern crate std;
 
+#[cfg(feature = "borsh")]
+mod borsh;
 mod client_state;
 mod consensus_state;
 mod header;

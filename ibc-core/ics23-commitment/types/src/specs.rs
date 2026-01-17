@@ -10,6 +10,10 @@ use crate::error::CommitmentError;
 ///
 /// This type encapsulates different types of proof specifications, mostly predefined, e.g., for
 /// Cosmos-SDK.
+#[cfg_attr(
+    feature = "borsh",
+    derive(borsh::BorshSerialize, borsh::BorshDeserialize)
+)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug, PartialEq)]
 pub struct ProofSpecs(Vec<ProofSpec>);
@@ -77,9 +81,22 @@ impl From<ProofSpecs> for Vec<RawProofSpec> {
     }
 }
 
+#[cfg_attr(
+    feature = "borsh",
+    derive(borsh::BorshSerialize, borsh::BorshDeserialize)
+)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Clone, Debug, PartialEq)]
-struct ProofSpec(RawProofSpec);
+struct ProofSpec(
+    #[cfg_attr(
+        feature = "borsh",
+        borsh(
+            serialize_with = "super::borsh::serialize_spec",
+            deserialize_with = "super::borsh::deserialize_spec"
+        )
+    )]
+    RawProofSpec,
+);
 
 impl TryFrom<RawProofSpec> for ProofSpec {
     type Error = DecodingError;
