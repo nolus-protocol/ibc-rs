@@ -81,13 +81,6 @@ pub trait ClientExecutionContext:
     where
         FindFn: FnMut(&(Height, Self::ConsensusStateRef)) -> bool;
 
-    // TODO delete me!
-    /// Delete the consensus state from the store located at the given `ClientConsensusStatePath`
-    fn delete_consensus_state(
-        &mut self,
-        consensus_state_path: ClientConsensusStatePath,
-    ) -> Result<(), HostError>;
-
     /// Called upon successful client update.
     ///
     /// Implementations are expected to use this to record the specified time
@@ -111,16 +104,6 @@ pub trait ClientExecutionContext:
     ) -> Result<(), HostError>
     where
         FindFn: FnMut(&(Height, (Timestamp, Height))) -> bool;
-
-    // TODO delete me!
-    /// Delete the update time and height associated with the client at the
-    /// specified height.
-    ///
-    /// This update time should be associated with a consensus state through the
-    /// specified height.
-    ///
-    /// Note that this timestamp is determined by the host.
-    fn delete_update_meta(&mut self, client_id: ClientId, height: Height) -> Result<(), HostError>;
 }
 
 /// An optional trait that extends the client validation context capabilities by

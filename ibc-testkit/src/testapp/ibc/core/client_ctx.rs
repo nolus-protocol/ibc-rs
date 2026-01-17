@@ -36,6 +36,14 @@ impl<S> MockIbcStore<S>
 where
     S: Debug + ProvableStore,
 {
+    pub fn delete_consensus_state(
+        &mut self,
+        consensus_state_path: ClientConsensusStatePath,
+    ) -> Result<(), HostError> {
+        self.consensus_state_store.delete(consensus_state_path);
+        Ok(())
+    }
+
     /// Returns the list of heights at which the consensus state of the given client was updated.
     ///
     /// Moved "as-was" the former implementation of the same function of [ExtClientValidationContext]
@@ -60,6 +68,25 @@ where
                 .map_err(HostError::invalid_state)
             })
             .collect::<Result<Vec<_>, _>>()
+    }
+
+    /// Delete the update metadata associated with the client at the specified
+    /// height.
+    fn delete_update_meta(&mut self, client_id: ClientId, height: Height) -> Result<(), HostError> {
+        let client_update_time_path = ClientUpdateTimePath::new(
+            client_id.clone(),
+            height.revision_number(),
+            height.revision_height(),
+        );
+        self.client_processed_times.delete(client_update_time_path);
+        let client_update_height_path = ClientUpdateHeightPath::new(
+            client_id,
+            height.revision_number(),
+            height.revision_height(),
+        );
+        self.client_processed_heights
+            .delete(client_update_height_path);
+        Ok(())
     }
 }
 
@@ -295,14 +322,6 @@ where
         Ok(())
     }
 
-    fn delete_consensus_state(
-        &mut self,
-        consensus_state_path: ClientConsensusStatePath,
-    ) -> Result<(), HostError> {
-        self.consensus_state_store.delete(consensus_state_path);
-        Ok(())
-    }
-
     fn delete_host_stamps_until<FindFn>(
         &mut self,
         client_id: &ClientId,
@@ -321,25 +340,6 @@ where
             }
             self.delete_update_meta(client_id.clone(), height)?;
         }
-        Ok(())
-    }
-
-    /// Delete the update metadata associated with the client at the specified
-    /// height.
-    fn delete_update_meta(&mut self, client_id: ClientId, height: Height) -> Result<(), HostError> {
-        let client_update_time_path = ClientUpdateTimePath::new(
-            client_id.clone(),
-            height.revision_number(),
-            height.revision_height(),
-        );
-        self.client_processed_times.delete(client_update_time_path);
-        let client_update_height_path = ClientUpdateHeightPath::new(
-            client_id,
-            height.revision_number(),
-            height.revision_height(),
-        );
-        self.client_processed_heights
-            .delete(client_update_height_path);
         Ok(())
     }
 
