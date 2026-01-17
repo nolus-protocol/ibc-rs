@@ -1,3 +1,5 @@
+use core::fmt::Debug;
+
 use ibc_client_tendermint_types::{
     ClientState as ClientStateType, ConsensusState as ConsensusStateType, Header as TmHeader,
 };
@@ -17,7 +19,7 @@ where
     E: ExtClientExecutionContext,
     E::ClientStateRef: From<ClientStateType>,
     ConsensusStateType: Convertible<E::ConsensusStateRef>,
-    <ConsensusStateType as TryFrom<E::ConsensusStateRef>>::Error: Into<ClientError>,
+    <ConsensusStateType as TryFrom<E::ConsensusStateRef>>::Error: Debug + Into<ClientError>,
 {
     fn initialise(
         &self,
@@ -141,7 +143,7 @@ where
     E: ExtClientExecutionContext,
     E::ClientStateRef: From<ClientStateType>,
     ConsensusStateType: Convertible<E::ConsensusStateRef>,
-    <ConsensusStateType as TryFrom<E::ConsensusStateRef>>::Error: Into<ClientError>,
+    <ConsensusStateType as TryFrom<E::ConsensusStateRef>>::Error: Debug + Into<ClientError>,
 {
     let header = TmHeader::try_from(header)?;
     let header_height = header.height();
@@ -321,36 +323,19 @@ where
     E: ClientExecutionContext + ExtClientValidationContext,
     E::ClientStateRef: From<ClientStateType>,
     ConsensusStateType: Convertible<E::ConsensusStateRef>,
-    <ConsensusStateType as TryFrom<E::ConsensusStateRef>>::Error: Into<ClientError>,
+    <ConsensusStateType as TryFrom<E::ConsensusStateRef>>::Error: Debug + Into<ClientError>,
 {
-    let mut heights = ctx.consensus_state_heights(client_id)?;
+    let valid_times_beginning = (ctx.host_timestamp()? - client_state.trusting_period)
+        .map_err(|_| TimestampError::OverflowedTimestamp)?;
+    let valid_tm_times_beginning = valid_times_beginning.into_host_time()?;
 
-    heights.sort();
+    ctx.delete_host_stamps_until(client_id, |&(_height, (host_timestamp, _host_height))| {
+        host_timestamp > valid_times_beginning
+    })?;
 
-    for height in heights {
-        let client_consensus_state_path = ClientConsensusStatePath::new(
-            client_id.clone(),
-            height.revision_number(),
-            height.revision_height(),
-        );
-        let consensus_state = ctx.consensus_state(&client_consensus_state_path)?;
-        let tm_consensus_state: ConsensusStateType =
-            consensus_state.try_into().map_err(Into::into)?;
-
-        let host_timestamp = ctx.host_timestamp()?.into_host_time()?;
-
-        let tm_consensus_state_timestamp = tm_consensus_state.timestamp();
-        let tm_consensus_state_expiry = (tm_consensus_state_timestamp
-            + client_state.trusting_period)
-            .map_err(|_| TimestampError::OverflowedTimestamp)?;
-
-        if tm_consensus_state_expiry > host_timestamp {
-            break;
-        }
-
-        ctx.delete_consensus_state(client_consensus_state_path)?;
-        ctx.delete_update_meta(client_id.clone(), height)?;
-    }
+    ctx.delete_consensus_until(client_id, |&(_height, ref consensus)| {
+        consensus.timestamp().expect("valid times in Tendermint state") > valid_tm_times_beginning
+    })?;
 
     Ok(())
 }

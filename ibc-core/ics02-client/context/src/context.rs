@@ -72,6 +72,16 @@ pub trait ClientExecutionContext:
         consensus_state: Self::ConsensusStateRef,
     ) -> Result<(), HostError>;
 
+    /// Delete consensus states until one that evaluates the predicate to [true].
+    fn delete_consensus_until<FindFn>(
+        &mut self,
+        client_id: &ClientId,
+        predicate: FindFn,
+    ) -> Result<(), HostError>
+    where
+        FindFn: FnMut(&(Height, Self::ConsensusStateRef)) -> bool;
+
+    // TODO delete me!
     /// Delete the consensus state from the store located at the given `ClientConsensusStatePath`
     fn delete_consensus_state(
         &mut self,
@@ -90,6 +100,19 @@ pub trait ClientExecutionContext:
         host_height: Height,
     ) -> Result<(), HostError>;
 
+    /// Delete the pairs of host timestamp and [Height] until one that evaluates the predicate to [true].
+    ///
+    /// Those pairs are associated with consensus states of the remote state mashine, the one this client tracks.
+    /// They relate the consensus [Height] of the remote chain to the local [Height] and timestamp.
+    fn delete_host_stamps_until<FindFn>(
+        &mut self,
+        client_id: &ClientId,
+        predicate: FindFn,
+    ) -> Result<(), HostError>
+    where
+        FindFn: FnMut(&(Height, (Timestamp, Height))) -> bool;
+
+    // TODO delete me!
     /// Delete the update time and height associated with the client at the
     /// specified height.
     ///
@@ -115,9 +138,6 @@ pub trait ExtClientValidationContext: ClientValidationContext {
 
     /// Returns the current height of the local chain.
     fn host_height(&self) -> Result<Height, HostError>;
-
-    /// Returns all the heights at which a consensus state is stored.
-    fn consensus_state_heights(&self, client_id: &ClientId) -> Result<Vec<Height>, HostError>;
 
     /// Search for the lowest consensus state higher than `height`.
     fn next_consensus_state(

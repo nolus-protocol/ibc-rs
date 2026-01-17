@@ -32,6 +32,37 @@ pub struct MockClientRecord {
     pub consensus_states: BTreeMap<Height, AnyConsensusState>,
 }
 
+impl<S> MockIbcStore<S>
+where
+    S: Debug + ProvableStore,
+{
+    /// Returns the list of heights at which the consensus state of the given client was updated.
+    ///
+    /// Moved "as-was" the former implementation of the same function of [ExtClientValidationContext]
+    fn consensus_state_heights(&self, client_id: &ClientId) -> Result<Vec<Height>, HostError> {
+        let path = format!("clients/{}/consensusStates", client_id).into();
+
+        self.consensus_state_store
+            .get_keys(&path)
+            .into_iter()
+            .filter_map(|path| {
+                if let Ok(Path::ClientConsensusState(consensus_path)) = path.try_into() {
+                    Some(consensus_path)
+                } else {
+                    None
+                }
+            })
+            .map(|consensus_path| {
+                Height::new(
+                    consensus_path.revision_number,
+                    consensus_path.revision_height,
+                )
+                .map_err(HostError::invalid_state)
+            })
+            .collect::<Result<Vec<_>, _>>()
+    }
+}
+
 impl<S> MockClientContext for MockIbcStore<S>
 where
     S: ProvableStore + Debug,
@@ -55,30 +86,6 @@ where
 
     fn host_height(&self) -> Result<Height, HostError> {
         ValidationContext::host_height(self)
-    }
-
-    /// Returns the list of heights at which the consensus state of the given client was updated.
-    fn consensus_state_heights(&self, client_id: &ClientId) -> Result<Vec<Height>, HostError> {
-        let path = format!("clients/{}/consensusStates", client_id).into();
-
-        self.consensus_state_store
-            .get_keys(&path)
-            .into_iter()
-            .filter_map(|path| {
-                if let Ok(Path::ClientConsensusState(consensus_path)) = path.try_into() {
-                    Some(consensus_path)
-                } else {
-                    None
-                }
-            })
-            .map(|consensus_path| {
-                Height::new(
-                    consensus_path.revision_number,
-                    consensus_path.revision_height,
-                )
-                .map_err(HostError::invalid_state)
-            })
-            .collect::<Result<Vec<_>, _>>()
     }
 
     fn next_consensus_state(
@@ -262,11 +269,58 @@ where
         Ok(())
     }
 
+    fn delete_consensus_until<FindFn>(
+        &mut self,
+        client_id: &ClientId,
+        mut predicate: FindFn,
+    ) -> Result<(), HostError>
+    where
+        FindFn: FnMut(&(Height, Self::ConsensusStateRef)) -> bool,
+    {
+        let mut heights = self.consensus_state_heights(client_id)?;
+        heights.sort();
+
+        for height in heights {
+            let path = ClientConsensusStatePath::new(
+                client_id.clone(),
+                height.revision_number(),
+                height.revision_height(),
+            );
+            let consensus = self.consensus_state(&path)?;
+            if predicate(&(height, consensus)) {
+                break;
+            }
+            self.delete_consensus_state(path)?;
+        }
+        Ok(())
+    }
+
     fn delete_consensus_state(
         &mut self,
         consensus_state_path: ClientConsensusStatePath,
     ) -> Result<(), HostError> {
         self.consensus_state_store.delete(consensus_state_path);
+        Ok(())
+    }
+
+    fn delete_host_stamps_until<FindFn>(
+        &mut self,
+        client_id: &ClientId,
+        mut predicate: FindFn,
+    ) -> Result<(), HostError>
+    where
+        FindFn: FnMut(&(Height, (Timestamp, Height))) -> bool,
+    {
+        let mut heights = self.consensus_state_heights(client_id)?;
+        heights.sort();
+
+        for height in heights {
+            let meta = self.client_update_meta(client_id, &height)?;
+            if predicate(&(height, meta)) {
+                break;
+            }
+            self.delete_update_meta(client_id.clone(), height)?;
+        }
         Ok(())
     }
 
