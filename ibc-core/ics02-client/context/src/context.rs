@@ -100,13 +100,15 @@ pub trait ClientExecutionContext:
     /// Stop on the first item that evaluates to [false].
     /// The pairs are associated with consensus states of the remote state mashine, the one this client tracks.
     /// They relate the consensus [Height] of the remote chain to the local [Height] and timestamp.
+    ///
+    /// The 'FindFn' has arguments 'guest height', and host 'time' and 'height'
     fn delete_host_stamps_while<FindFn>(
         &mut self,
         client_id: &ClientId,
         while_functor: FindFn,
     ) -> Result<(), HostError>
     where
-        FindFn: FnMut(&(Height, (Timestamp, Height))) -> bool;
+        FindFn: FnMut(&Height, &(Timestamp, Height)) -> bool;
 }
 
 /// An optional trait that extends the client validation context capabilities by

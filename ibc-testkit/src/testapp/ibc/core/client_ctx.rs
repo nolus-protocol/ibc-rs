@@ -328,14 +328,14 @@ where
         mut predicate: FindFn,
     ) -> Result<(), HostError>
     where
-        FindFn: FnMut(&(Height, (Timestamp, Height))) -> bool,
+        FindFn: FnMut(&Height, &(Timestamp, Height)) -> bool,
     {
         let mut heights = self.consensus_state_heights(client_id)?;
         heights.sort();
 
         for height in heights {
             let meta = self.client_update_meta(client_id, &height)?;
-            if !predicate(&(height, meta)) {
+            if !predicate(&height, &meta) {
                 break;
             }
             self.delete_update_meta(client_id.clone(), height)?;
