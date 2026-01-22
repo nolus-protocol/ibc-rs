@@ -79,7 +79,7 @@ pub trait ClientExecutionContext:
         predicate: FindFn,
     ) -> Result<(), HostError>
     where
-        FindFn: FnMut(&(Height, Self::ConsensusStateRef)) -> bool;
+        FindFn: FnMut(&Height, &Self::ConsensusStateRef) -> bool;
 
     /// Called upon successful client update.
     ///

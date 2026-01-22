@@ -302,7 +302,7 @@ where
         mut predicate: FindFn,
     ) -> Result<(), HostError>
     where
-        FindFn: FnMut(&(Height, Self::ConsensusStateRef)) -> bool,
+        FindFn: FnMut(&Height, &Self::ConsensusStateRef) -> bool,
     {
         let mut heights = self.consensus_state_heights(client_id)?;
         heights.sort();
@@ -314,7 +314,7 @@ where
                 height.revision_height(),
             );
             let consensus = self.consensus_state(&path)?;
-            if predicate(&(height, consensus)) {
+            if predicate(&height, &consensus) {
                 break;
             }
             self.delete_consensus_state(path)?;

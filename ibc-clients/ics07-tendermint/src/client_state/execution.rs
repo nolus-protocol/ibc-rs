@@ -333,8 +333,11 @@ where
         host_timestamp > valid_times_beginning
     })?;
 
-    ctx.delete_consensus_until(client_id, |&(_height, ref consensus)| {
-        consensus.timestamp().expect("valid times in Tendermint state") > valid_tm_times_beginning
+    ctx.delete_consensus_until(client_id, |ref _height, ref consensus| {
+        consensus
+            .timestamp()
+            .expect("valid times in Tendermint state")
+            > valid_tm_times_beginning
     })?;
 
     Ok(())
