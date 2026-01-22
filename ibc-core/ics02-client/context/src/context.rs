@@ -72,11 +72,13 @@ pub trait ClientExecutionContext:
         consensus_state: Self::ConsensusStateRef,
     ) -> Result<(), HostError>;
 
-    /// Delete consensus states until one that evaluates the predicate to [true].
-    fn delete_consensus_until<FindFn>(
+    /// Delete consensus states while they evaluate the predicate to [true].
+    ///
+    /// Stop on the first item that evaluates to [false]
+    fn delete_consensus_while<FindFn>(
         &mut self,
         client_id: &ClientId,
-        predicate: FindFn,
+        while_functor: FindFn,
     ) -> Result<(), HostError>
     where
         FindFn: FnMut(&Height, &Self::ConsensusStateRef) -> bool;
@@ -93,14 +95,15 @@ pub trait ClientExecutionContext:
         host_height: Height,
     ) -> Result<(), HostError>;
 
-    /// Delete the pairs of host timestamp and [Height] until one that evaluates the predicate to [true].
+    /// Delete the pairs of host timestamp and [Height] while they evaluate the predicate to [true].
     ///
-    /// Those pairs are associated with consensus states of the remote state mashine, the one this client tracks.
+    /// Stop on the first item that evaluates to [false].
+    /// The pairs are associated with consensus states of the remote state mashine, the one this client tracks.
     /// They relate the consensus [Height] of the remote chain to the local [Height] and timestamp.
-    fn delete_host_stamps_until<FindFn>(
+    fn delete_host_stamps_while<FindFn>(
         &mut self,
         client_id: &ClientId,
-        predicate: FindFn,
+        while_functor: FindFn,
     ) -> Result<(), HostError>
     where
         FindFn: FnMut(&(Height, (Timestamp, Height))) -> bool;

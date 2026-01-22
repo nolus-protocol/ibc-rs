@@ -329,15 +329,15 @@ where
         .map_err(|_| TimestampError::OverflowedTimestamp)?;
     let valid_tm_times_beginning = valid_times_beginning.into_host_time()?;
 
-    ctx.delete_host_stamps_until(client_id, |&(_height, (host_timestamp, _host_height))| {
-        host_timestamp > valid_times_beginning
+    ctx.delete_host_stamps_while(client_id, |&(_height, (host_timestamp, _host_height))| {
+        host_timestamp <= valid_times_beginning
     })?;
 
-    ctx.delete_consensus_until(client_id, |ref _height, ref consensus| {
+    ctx.delete_consensus_while(client_id, |ref _height, ref consensus| {
         consensus
             .timestamp()
             .expect("valid times in Tendermint state")
-            > valid_tm_times_beginning
+            <= valid_tm_times_beginning
     })?;
 
     Ok(())

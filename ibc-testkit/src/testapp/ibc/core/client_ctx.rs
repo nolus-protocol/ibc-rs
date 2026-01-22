@@ -296,7 +296,7 @@ where
         Ok(())
     }
 
-    fn delete_consensus_until<FindFn>(
+    fn delete_consensus_while<FindFn>(
         &mut self,
         client_id: &ClientId,
         mut predicate: FindFn,
@@ -314,7 +314,7 @@ where
                 height.revision_height(),
             );
             let consensus = self.consensus_state(&path)?;
-            if predicate(&height, &consensus) {
+            if !predicate(&height, &consensus) {
                 break;
             }
             self.delete_consensus_state(path)?;
@@ -322,7 +322,7 @@ where
         Ok(())
     }
 
-    fn delete_host_stamps_until<FindFn>(
+    fn delete_host_stamps_while<FindFn>(
         &mut self,
         client_id: &ClientId,
         mut predicate: FindFn,
@@ -335,7 +335,7 @@ where
 
         for height in heights {
             let meta = self.client_update_meta(client_id, &height)?;
-            if predicate(&(height, meta)) {
+            if !predicate(&(height, meta)) {
                 break;
             }
             self.delete_update_meta(client_id.clone(), height)?;
