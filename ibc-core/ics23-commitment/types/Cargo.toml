@@ -71,6 +71,7 @@ schema = [
 borsh = [
   "dep:borsh",
   "dep:prost",
+  "std",
   "ibc-proto/borsh",
   "ibc-primitives/borsh",
   "ibc-core-host-types/borsh",
