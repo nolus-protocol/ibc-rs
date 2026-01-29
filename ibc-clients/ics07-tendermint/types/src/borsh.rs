@@ -2,7 +2,7 @@
 ///
 /// For example, Rust standard library and Tendermint types.
 use core::{ops::Add, time::Duration};
-use std::{format, string::ToString, vec::Vec};
+use std::{string::ToString, vec::Vec};
 
 use borsh::{
     io::{Error as BorshError, ErrorKind, Read, Result, Write},
@@ -46,5 +46,5 @@ pub fn deserialize_hash<R: Read>(reader: &mut R) -> Result<Hash> {
 }
 
 fn invalid_tendermint_data(err: TmError) -> BorshError {
-    BorshError::new(ErrorKind::InvalidData, format!("{}", err.to_string()))
+    BorshError::new(ErrorKind::InvalidData, err.to_string())
 }

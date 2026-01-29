@@ -333,7 +333,7 @@ where
         host_timestamp <= valid_times_beginning
     })?;
 
-    ctx.delete_consensus_while(client_id, |ref _height, ref consensus| {
+    ctx.delete_consensus_while(client_id, |_height, consensus| {
         consensus
             .timestamp()
             .expect("valid times in Tendermint state")
