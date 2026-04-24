@@ -2,7 +2,6 @@
 
 use ibc_core_client_types::error::ClientError;
 use ibc_core_commitment_types::commitment::CommitmentRoot;
-use ibc_primitives::prelude::*;
 use ibc_primitives::proto::Any;
 use ibc_primitives::Timestamp;
 

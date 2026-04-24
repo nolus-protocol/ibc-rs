@@ -3,7 +3,6 @@
 
 use ibc::core::client::types::Height;
 use ibc::core::host::types::identifiers::{ClientId, ConnectionId};
-use ibc::primitives::prelude::*;
 use ibc_proto::ibc::core::connection::v1::{
     QueryClientConnectionsRequest as RawQueryClientConnectionsRequest,
     QueryConnectionClientStateRequest as RawQueryConnectionClientStateRequest,

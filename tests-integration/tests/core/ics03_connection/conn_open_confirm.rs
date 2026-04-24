@@ -9,7 +9,6 @@ use ibc::core::handler::types::events::{IbcEvent, MessageEvent};
 use ibc::core::handler::types::msgs::MsgEnvelope;
 use ibc::core::host::types::identifiers::ClientId;
 use ibc::core::host::ValidationContext;
-use ibc::core::primitives::prelude::*;
 use ibc::core::primitives::ZERO_DURATION;
 use ibc_testkit::context::MockContext;
 use ibc_testkit::fixtures::core::connection::dummy_conn_open_confirm;

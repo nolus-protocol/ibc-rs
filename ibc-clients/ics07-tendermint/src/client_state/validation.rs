@@ -8,7 +8,6 @@ use ibc_core_client::types::error::ClientError;
 use ibc_core_client::types::Status;
 use ibc_core_host::types::identifiers::ClientId;
 use ibc_core_host::types::path::ClientConsensusStatePath;
-use ibc_primitives::prelude::*;
 use ibc_primitives::proto::Any;
 use tendermint::crypto::default::Sha256;
 use tendermint::crypto::Sha256 as Sha256Trait;

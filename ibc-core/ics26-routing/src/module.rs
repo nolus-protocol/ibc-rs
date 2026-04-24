@@ -8,7 +8,6 @@ use ibc_core_channel_types::packet::Packet;
 use ibc_core_channel_types::Version;
 use ibc_core_host_types::identifiers::{ChannelId, ConnectionId, PortId};
 use ibc_core_router_types::module::ModuleExtras;
-use ibc_primitives::prelude::*;
 use ibc_primitives::Signer;
 
 pub trait Module: Debug {

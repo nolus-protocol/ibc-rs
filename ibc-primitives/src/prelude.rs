@@ -6,4 +6,3 @@ pub use alloc::collections::BTreeMap;
 pub use alloc::string::{String, ToString};
 pub use alloc::vec::Vec;
 pub use alloc::{format, str, vec};
-pub use core::prelude::v1::*;
