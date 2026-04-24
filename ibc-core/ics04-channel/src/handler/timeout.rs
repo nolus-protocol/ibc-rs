@@ -57,7 +57,16 @@ where
     let chan_end_on_a = ctx_a.channel_end(&chan_end_path_on_a)?;
 
     // In all cases, this event is emitted
-    let event = IbcEvent::TimeoutPacket(TimeoutPacket::new(packet.clone(), chan_end_on_a.ordering));
+    let event = IbcEvent::TimeoutPacket(TimeoutPacket::new(
+        packet.timeout_height_on_b,
+        packet.timeout_timestamp_on_b,
+        packet.seq_on_a,
+        packet.port_id_on_a.clone(),
+        packet.chan_id_on_a.clone(),
+        packet.port_id_on_b.clone(),
+        packet.chan_id_on_b.clone(),
+        chan_end_on_a.ordering,
+    ));
     ctx_a.emit_ibc_event(IbcEvent::Message(MessageEvent::Channel))?;
     ctx_a.emit_ibc_event(event)?;
 

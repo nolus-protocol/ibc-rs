@@ -90,7 +90,14 @@ where
     ctx_b.log_message("success: packet write acknowledgement".to_string())?;
 
     let event = IbcEvent::WriteAcknowledgement(WriteAcknowledgement::new(
-        packet,
+        packet.data,
+        packet.timeout_height_on_b,
+        packet.timeout_timestamp_on_b,
+        packet.seq_on_a,
+        packet.port_id_on_a,
+        packet.chan_id_on_a,
+        packet.port_id_on_b,
+        packet.chan_id_on_b,
         acknowledgement,
         conn_id_on_b.clone(),
     ));
@@ -142,7 +149,13 @@ where
 
     // In all cases, this event is emitted
     let event = IbcEvent::AcknowledgePacket(AcknowledgePacket::new(
-        msg.packet.clone(),
+        msg.packet.timeout_height_on_b,
+        msg.packet.timeout_timestamp_on_b,
+        msg.packet.seq_on_a,
+        msg.packet.port_id_on_a.clone(),
+        msg.packet.chan_id_on_a.clone(),
+        msg.packet.port_id_on_b.clone(),
+        msg.packet.chan_id_on_b.clone(),
         chan_end_on_a.ordering,
         conn_id_on_a.clone(),
     ));

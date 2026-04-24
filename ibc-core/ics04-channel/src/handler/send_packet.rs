@@ -126,7 +126,14 @@ pub fn send_packet_execute(
 
         ctx_a.log_message("success: packet send".to_string())?;
         let event = IbcEvent::SendPacket(SendPacket::new(
-            packet,
+            packet.data,
+            packet.timeout_height_on_b,
+            packet.timeout_timestamp_on_b,
+            packet.seq_on_a,
+            packet.port_id_on_a,
+            packet.chan_id_on_a,
+            packet.port_id_on_b,
+            packet.chan_id_on_b,
             chan_end_on_a.ordering,
             conn_id_on_a.clone(),
         ));

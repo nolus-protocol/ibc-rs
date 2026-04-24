@@ -249,7 +249,14 @@ mod tests {
         packet.data = vec![128];
 
         let ibc_event = IbcEvent::SendPacket(SendPacket::new(
-            packet,
+            packet.data,
+            packet.timeout_height_on_b,
+            packet.timeout_timestamp_on_b,
+            packet.seq_on_a,
+            packet.port_id_on_a,
+            packet.chan_id_on_a,
+            packet.port_id_on_b,
+            packet.chan_id_on_b,
             Order::Unordered,
             ConnectionId::zero(),
         ));

@@ -87,7 +87,14 @@ where
 
         let conn_id_on_b = &chan_end_on_b.connection_hops()[0];
         let event = IbcEvent::ReceivePacket(ReceivePacket::new(
-            msg.packet.clone(),
+            msg.packet.data.clone(),
+            msg.packet.timeout_height_on_b,
+            msg.packet.timeout_timestamp_on_b,
+            msg.packet.seq_on_a,
+            msg.packet.port_id_on_a.clone(),
+            msg.packet.chan_id_on_a.clone(),
+            msg.packet.port_id_on_b.clone(),
+            msg.packet.chan_id_on_b.clone(),
             chan_end_on_b.ordering,
             conn_id_on_b.clone(),
         ));
