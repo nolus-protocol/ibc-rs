@@ -34,6 +34,8 @@ ibc-core-host-types       = { workspace = true }
 ibc-primitives            = { workspace = true }
 ibc-proto                 = { workspace = true }
 
+data-types-macros = { workspace = true }
+
 # cosmos dependencies
 tendermint = { workspace = true }
 

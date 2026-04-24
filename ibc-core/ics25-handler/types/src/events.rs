@@ -91,10 +91,10 @@ impl TryFrom<IbcEvent> for abci::Event {
 impl IbcEvent {
     pub fn event_type(&self) -> &str {
         match self {
-            IbcEvent::CreateClient(event) => event.event_type(),
-            IbcEvent::UpdateClient(event) => event.event_type(),
-            IbcEvent::ClientMisbehaviour(event) => event.event_type(),
-            IbcEvent::UpgradeClient(event) => event.event_type(),
+            IbcEvent::CreateClient(_) => ClientEvents::CreateClient::EVENT_KIND,
+            IbcEvent::UpdateClient(_) => ClientEvents::UpdateClient::EVENT_KIND,
+            IbcEvent::ClientMisbehaviour(_) => ClientEvents::ClientMisbehaviour::EVENT_KIND,
+            IbcEvent::UpgradeClient(_) => ClientEvents::UpgradeClient::EVENT_KIND,
             IbcEvent::OpenInitConnection(event) => event.event_type(),
             IbcEvent::OpenTryConnection(event) => event.event_type(),
             IbcEvent::OpenAckConnection(event) => event.event_type(),

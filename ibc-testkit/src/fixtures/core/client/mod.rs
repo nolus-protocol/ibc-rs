@@ -57,14 +57,14 @@ mod tests {
 
         let tests: Vec<Test> = vec![
             Test {
-                event_kind: CREATE_CLIENT_EVENT,
+                event_kind: CreateClient::EVENT_KIND,
                 event: CreateClient::new(client_id.clone(), client_type.clone(), consensus_height)
                     .into(),
                 expected_keys: expected_keys[0..3].to_vec(),
                 expected_values: expected_values[0..3].to_vec(),
             },
             Test {
-                event_kind: UPDATE_CLIENT_EVENT,
+                event_kind: UpdateClient::EVENT_KIND,
                 event: UpdateClient::new(
                     client_id.clone(),
                     client_type.clone(),
@@ -77,14 +77,14 @@ mod tests {
                 expected_values: expected_values.clone(),
             },
             Test {
-                event_kind: UPGRADE_CLIENT_EVENT,
+                event_kind: UpgradeClient::EVENT_KIND,
                 event: UpgradeClient::new(client_id.clone(), client_type.clone(), consensus_height)
                     .into(),
                 expected_keys: expected_keys[0..3].to_vec(),
                 expected_values: expected_values[0..3].to_vec(),
             },
             Test {
-                event_kind: CLIENT_MISBEHAVIOUR_EVENT,
+                event_kind: ClientMisbehaviour::EVENT_KIND,
                 event: ClientMisbehaviour::new(client_id, client_type).into(),
                 expected_keys: expected_keys[0..2].to_vec(),
                 expected_values: expected_values[0..2].to_vec(),
