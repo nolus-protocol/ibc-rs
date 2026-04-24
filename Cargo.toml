@@ -35,6 +35,7 @@ members = [
   "ibc-testkit",
 
   # internal crates that are not published
+  "data-types-macros",
   "tests-integration",
 ]
 
@@ -106,6 +107,8 @@ ibc-app-transfer-types      = { version = "0.57.0", path = "./ibc-apps/ics20-tra
 ibc-app-nft-transfer-types  = { version = "0.57.0", path = "./ibc-apps/ics721-nft-transfer/types", default-features = false }
 
 ibc-proto = { version = "0.51.1", default-features = false }
+
+data-types-macros = { path = "./data-types-macros", default-features = false }
 
 # cosmos dependencies
 tendermint                       = { version = "0.40.0", default-features = false }
