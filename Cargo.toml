@@ -1,5 +1,5 @@
 [workspace]
-resolver = "2"
+resolver = "3"
 # members sorted by publishing order to `crates.io`
 members = [
   "ibc-derive",
@@ -47,7 +47,7 @@ exclude = [
 version      = "0.57.0"
 license      = "Apache-2.0"
 edition      = "2021"
-rust-version = "1.79.0"
+rust-version = "1.95.0"
 readme       = "README.md"
 repository   = "https://github.com/cosmos/ibc-rs"
 authors      = [ "Informal Systems <hello@informal.systems>" ]
