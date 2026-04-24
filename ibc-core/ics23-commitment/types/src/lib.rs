@@ -15,6 +15,7 @@
 #[cfg(feature = "std")]
 extern crate std;
 
+#[cfg(feature = "borsh")]
 pub mod borsh;
 pub mod commitment;
 pub mod error;
