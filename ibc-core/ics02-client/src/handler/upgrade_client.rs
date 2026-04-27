@@ -7,7 +7,6 @@ use ibc_core_client_types::msgs::MsgUpgradeClient;
 use ibc_core_handler_types::events::{IbcEvent, MessageEvent};
 use ibc_core_host::types::path::ClientConsensusStatePath;
 use ibc_core_host::{ExecutionContext, ValidationContext};
-use ibc_primitives::prelude::*;
 
 pub fn validate<Ctx>(ctx: &Ctx, msg: MsgUpgradeClient) -> Result<(), ClientError>
 where

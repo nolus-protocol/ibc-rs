@@ -6,7 +6,6 @@ use ibc::apps::nft_transfer::types::{
 };
 use ibc::core::host::types::error::HostError;
 use ibc::core::host::types::identifiers::{ChannelId, PortId};
-use ibc::core::primitives::prelude::*;
 use ibc::core::primitives::Signer;
 
 use super::types::{DummyNft, DummyNftClass, DummyNftTransferModule};

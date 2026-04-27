@@ -5,7 +5,6 @@ use ibc::core::entrypoint::{execute, validate};
 use ibc::core::handler::types::events::{IbcEvent, MessageEvent};
 use ibc::core::handler::types::msgs::MsgEnvelope;
 use ibc::core::host::ValidationContext;
-use ibc::core::primitives::prelude::*;
 use ibc_testkit::context::MockContext;
 use ibc_testkit::fixtures::core::connection::dummy_msg_conn_open_try;
 use ibc_testkit::fixtures::core::context::dummy_store_generic_test_context;

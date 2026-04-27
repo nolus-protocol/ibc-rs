@@ -12,7 +12,6 @@ use ibc_core_client::context::consensus_state::ConsensusState as ConsensusStateT
 use ibc_core_client::types::error::ClientError;
 use ibc_core_commitment_types::commitment::CommitmentRoot;
 use ibc_core_host::types::error::DecodingError;
-use ibc_primitives::prelude::*;
 use ibc_primitives::proto::{Any, Protobuf};
 use ibc_primitives::{IntoTimestamp, Timestamp};
 use tendermint::{Hash, Time};

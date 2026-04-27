@@ -11,7 +11,6 @@
 use ibc_client_tendermint_types::proto::v1::ClientState as RawTmClientState;
 use ibc_client_tendermint_types::ClientState as ClientStateType;
 use ibc_core_host::types::error::DecodingError;
-use ibc_primitives::prelude::*;
 use ibc_primitives::proto::{Any, Protobuf};
 
 mod common;
@@ -86,6 +85,7 @@ mod tests {
     use ibc_core_client::types::Height;
     use ibc_core_commitment_types::specs::ProofSpecs;
     use ibc_core_host::types::identifiers::ChainId;
+    use ibc_primitives::prelude::*;
 
     use super::*;
 

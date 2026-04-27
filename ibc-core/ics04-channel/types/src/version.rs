@@ -6,6 +6,7 @@ use core::convert::Infallible;
 use core::fmt::{Display, Error as FmtError, Formatter};
 use core::str::FromStr;
 
+use derive_more::derive::{From, Into};
 use ibc_primitives::prelude::*;
 
 use super::error::ChannelError;
@@ -30,7 +31,7 @@ use super::error::ChannelError;
 )]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, From, Into)]
 pub struct Version(String);
 
 impl Version {
@@ -58,12 +59,6 @@ impl Version {
             });
         }
         Ok(())
-    }
-}
-
-impl From<String> for Version {
-    fn from(s: String) -> Self {
-        Self::new(s)
     }
 }
 

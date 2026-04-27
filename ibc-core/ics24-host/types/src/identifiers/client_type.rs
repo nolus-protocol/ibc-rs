@@ -2,6 +2,7 @@
 
 use core::str::FromStr;
 
+use derive_more::derive::Into;
 use ibc_primitives::prelude::*;
 
 use super::ClientId;
@@ -22,7 +23,7 @@ use crate::validate::validate_client_type;
 )]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 /// Type of the client, depending on the specific consensus algorithm.
-#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, derive_more::Display)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Into, derive_more::Display)]
 pub struct ClientType(String);
 
 impl ClientType {

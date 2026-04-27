@@ -1,5 +1,5 @@
 [workspace]
-resolver = "2"
+resolver = "3"
 # members sorted by publishing order to `crates.io`
 members = [
   "ibc-derive",
@@ -35,6 +35,7 @@ members = [
   "ibc-testkit",
 
   # internal crates that are not published
+  "data-types-macros",
   "tests-integration",
 ]
 
@@ -47,7 +48,7 @@ exclude = [
 version      = "0.57.0"
 license      = "Apache-2.0"
 edition      = "2021"
-rust-version = "1.79.0"
+rust-version = "1.95.0"
 readme       = "README.md"
 repository   = "https://github.com/cosmos/ibc-rs"
 authors      = [ "Informal Systems <hello@informal.systems>" ]
@@ -106,6 +107,8 @@ ibc-app-transfer-types      = { version = "0.57.0", path = "./ibc-apps/ics20-tra
 ibc-app-nft-transfer-types  = { version = "0.57.0", path = "./ibc-apps/ics721-nft-transfer/types", default-features = false }
 
 ibc-proto = { version = "0.51.1", default-features = false }
+
+data-types-macros = { path = "./data-types-macros", default-features = false }
 
 # cosmos dependencies
 tendermint                       = { version = "0.40.0", default-features = false }

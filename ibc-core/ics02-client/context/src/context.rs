@@ -2,7 +2,6 @@ use ibc_core_client_types::Height;
 use ibc_core_host_types::error::HostError;
 use ibc_core_host_types::identifiers::ClientId;
 use ibc_core_host_types::path::{ClientConsensusStatePath, ClientStatePath};
-use ibc_primitives::prelude::*;
 use ibc_primitives::Timestamp;
 
 use crate::client_state::{ClientStateExecution, ClientStateValidation};
