@@ -2,15 +2,14 @@
 
 use data_types_macros::{define_attribute, define_event};
 use ibc_core_client_types::Height;
-use ibc_core_host_types::error::DecodingError;
-use ibc_core_host_types::identifiers::{ChannelId, ConnectionId, PortId, Sequence};
+use ibc_core_host_types::{
+    error::DecodingError,
+    identifiers::{ChannelId, ConnectionId, PortId, Sequence},
+};
 use ibc_primitives::prelude::*;
 use subtle_encoding::hex;
 
-use super::acknowledgement::Acknowledgement;
-use super::channel::Order;
-use super::timeout::TimeoutHeight;
-use super::Version;
+use super::{acknowledgement::Acknowledgement, channel::Order, timeout::TimeoutHeight, Version};
 use crate::timeout::TimeoutTimestamp;
 
 define_attribute!(
