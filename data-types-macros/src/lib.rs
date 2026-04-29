@@ -137,37 +137,67 @@ macro_rules! define_event {
             }
         }
 
-        impl TryFrom<abci::Event> for $type {
+        impl<K, A, AK, AV> TryFrom<(K, A)> for $type
+        where
+            K: Into<String>,
+            A: IntoIterator<Item = (AK, AV)>,
+            AK: AsRef<str>,
+            AV: AsRef<str>,
+        {
             type Error = $crate::DecodingError;
 
-            fn try_from(event: abci::Event) -> Result<Self, Self::Error> {
-                if event.kind != Self::EVENT_KIND {
-                    return Err(Self::Error::MismatchedResourceName {
-                        expected: Self::EVENT_KIND.into(),
-                        actual: event.kind,
-                    });
+            fn try_from((kind, attributes): (K, A)) -> Result<Self, Self::Error> {
+                {
+                    let kind = kind.into();
+
+                    if kind != Self::EVENT_KIND {
+                        return Err(Self::Error::MismatchedResourceName {
+                            expected: Self::EVENT_KIND.into(),
+                            actual: kind,
+                        });
+                    };
                 }
 
                 $(let mut $attribute = None;)+
 
-                for attribute in event.attributes {
-                    let key = attribute
-                        .key_str()
-                        .map_err(|e| Self::Error::invalid_raw_data(format!("attribute key: {e}")))?;
+                for (key, value) in attributes {
+                    let key = key.as_ref();
 
                     match key {
                         $(<$attribute_type>::ATTRIBUTE_KEY => {
-                            $attribute = Some(attribute.try_into()?);
-                        },)+
+                            $attribute = Some(value.as_ref().parse()?);
+                        })+
                         _ => {}
                     }
                 }
 
-                $(let $attribute = $attribute.ok_or(Self::Error::missing_raw_data(format!("{} attribute", <$attribute_type>::FRIENDLY_NAME)))?;)+
+                $(let $attribute = $attribute.ok_or(
+                    Self::Error::missing_raw_data(format!("Attribute {} is not set!", <$attribute_type>::FRIENDLY_NAME))
+                )?;)+
 
                 Ok(Self {
                     $($attribute,)+
                 })
+            }
+        }
+
+        impl TryFrom<abci::Event> for $type {
+            type Error = $crate::DecodingError;
+
+            fn try_from(event: abci::Event) -> Result<Self, Self::Error> {
+                (
+                    event.kind,
+                    event.attributes.iter().map(|attribute| {
+                        Ok((
+                            attribute
+                                .key_str()
+                                .map_err(|e| Self::Error::invalid_raw_data(format!("attribute key: {e}")))?,
+                            attribute
+                                .value_str()
+                                .map_err(|e| Self::Error::invalid_raw_data(format!("attribute value: {e}")))?,
+                        ))
+                    }).collect::<Result<Vec<_>, Self::Error>>()?
+                ).try_into()
             }
         }
     };
