@@ -1,18 +1,14 @@
 //! Types for the IBC events emitted from Tendermint Websocket by the connection module.
 
 use data_types_macros::{define_attribute, define_event};
-use ibc_core_host_types::{
-    error::DecodingError,
-    identifiers::{ClientId, ConnectionId},
-};
+use ibc_core_host_types::identifiers::{ClientId, ConnectionId};
 use ibc_primitives::prelude::*;
-use tendermint::abci;
 
 define_attribute!(
     "connection_id" => ConnectionIdAttribute(ConnectionId) {
         friendly_name = "connection ID",
         into = String::from,
-        try_from = |connection_id: &str| connection_id.parse().map_err(Into::into),
+        parse = |connection_id: &str| connection_id.parse().map_err(Into::into),
     }
 );
 
@@ -20,7 +16,7 @@ define_attribute!(
     "client_id" => ClientIdAttribute(ClientId) {
         friendly_name = "connection ID",
         into = String::from,
-        try_from = |client_id: &str| client_id.parse().map_err(Into::into),
+        parse = |client_id: &str| client_id.parse().map_err(Into::into),
     }
 );
 
@@ -28,7 +24,7 @@ define_attribute!(
     "counterparty_connection_id" => CounterpartyConnectionIdAttribute(ConnectionId) {
         friendly_name = "connection ID",
         into = String::from,
-        try_from = |connection_id: &str| connection_id.parse().map_err(Into::into),
+        parse = |connection_id: &str| connection_id.parse().map_err(Into::into),
     }
 );
 
@@ -36,7 +32,7 @@ define_attribute!(
     "counterparty_client_id" => CounterpartyClientIdAttribute(ClientId) {
         friendly_name = "connection ID",
         into = String::from,
-        try_from = |client_id: &str| client_id.parse().map_err(Into::into),
+        parse = |client_id: &str| client_id.parse().map_err(Into::into),
     }
 );
 
