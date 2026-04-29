@@ -140,16 +140,16 @@ macro_rules! define_event {
             }
         }
 
-        impl<K, A, AK, AV> TryFrom<(K, A)> for $type
+        impl<Kind, Attrs, AttrKey, AttrValue> TryFrom<(Kind, Attrs)> for $type
         where
-            K: Into<String>,
-            A: IntoIterator<Item = (AK, AV)>,
-            AK: AsRef<str>,
-            AV: AsRef<str>,
+            Kind: Into<String>,
+            Attrs: IntoIterator<Item = (AttrKey, AttrValue)>,
+            AttrKey: AsRef<str>,
+            AttrValue: AsRef<str>,
         {
             type Error = $crate::DecodingError;
 
-            fn try_from((kind, attributes): (K, A)) -> Result<Self, Self::Error> {
+            fn try_from((kind, attributes): (Kind, Attrs)) -> Result<Self, Self::Error> {
                 {
                     let kind = kind.into();
 
