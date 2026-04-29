@@ -1,5 +1,7 @@
 #![no_std]
 
+pub use ibc_core_host_types::error::DecodingError;
+
 pub trait Newtype {
     type Inner;
 }
@@ -48,23 +50,25 @@ macro_rules! define_attribute {
         }
 
         impl TryFrom<abci::EventAttribute> for $type {
-            type Error = DecodingError;
+            type Error = $crate::DecodingError;
 
             fn try_from(value: abci::EventAttribute) -> Result<Self, Self::Error> {
                 let key_str = value
                     .key_str()
-                    .map_err(|_| DecodingError::missing_raw_data("attribute key"))?;
+                    .map_err(|_| Self::Error::missing_raw_data("attribute key"))?;
 
                 if key_str != Self::ATTRIBUTE_KEY {
-                    return Err(DecodingError::MismatchedResourceName {
+                    return Err(Self::Error::MismatchedResourceName {
                         expected: Self::ATTRIBUTE_KEY.to_string(),
                         actual: key_str.to_string(),
                     });
                 }
 
-                $try_from(value.value_str().map_err(|e| {
-                    DecodingError::missing_raw_data(format!("attribute value: {e}"))
-                })?)
+                $try_from(
+                    value.value_str().map_err(|e| {
+                        Self::Error::missing_raw_data(format!("attribute value: {e}"))
+                    })?,
+                )
                 .map(Self)
             }
         }
@@ -128,11 +132,11 @@ macro_rules! define_event {
         }
 
         impl TryFrom<abci::Event> for $type {
-            type Error = DecodingError;
+            type Error = $crate::DecodingError;
 
             fn try_from(event: abci::Event) -> Result<Self, Self::Error> {
                 if event.kind != Self::EVENT_KIND {
-                    return Err(DecodingError::MismatchedResourceName {
+                    return Err(Self::Error::MismatchedResourceName {
                         expected: Self::EVENT_KIND.into(),
                         actual: event.kind,
                     });
@@ -143,7 +147,7 @@ macro_rules! define_event {
                 for attribute in event.attributes {
                     let key = attribute
                         .key_str()
-                        .map_err(|e| DecodingError::invalid_raw_data(format!("attribute key: {e}")))?;
+                        .map_err(|e| Self::Error::invalid_raw_data(format!("attribute key: {e}")))?;
 
                     match key {
                         $(<$attribute_type>::ATTRIBUTE_KEY => {
@@ -153,7 +157,7 @@ macro_rules! define_event {
                     }
                 }
 
-                $(let $attribute = $attribute.ok_or(DecodingError::missing_raw_data(format!("{} attribute", <$attribute_type>::FRIENDLY_NAME)))?;)+
+                $(let $attribute = $attribute.ok_or(Self::Error::missing_raw_data(format!("{} attribute", <$attribute_type>::FRIENDLY_NAME)))?;)+
 
                 Ok(Self {
                     $($attribute,)+

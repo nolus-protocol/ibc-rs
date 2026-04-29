@@ -9,3 +9,4 @@ repository.workspace = true
 authors.workspace = true
 
 [dependencies]
+ibc-core-host-types = { workspace = true }
