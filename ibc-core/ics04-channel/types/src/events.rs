@@ -9,8 +9,9 @@ use ibc_core_host_types::{
 use ibc_primitives::prelude::*;
 use subtle_encoding::hex;
 
-use super::{acknowledgement::Acknowledgement, channel::Order, timeout::TimeoutHeight, Version};
 use crate::timeout::TimeoutTimestamp;
+
+use super::{acknowledgement::Acknowledgement, channel::Order, timeout::TimeoutHeight, Version};
 
 define_attribute!(
     "connection_id" => ConnectionIdAttribute(ConnectionId) {
