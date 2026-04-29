@@ -135,7 +135,7 @@ macro_rules! define_event {
                     return Err(DecodingError::MismatchedResourceName {
                         expected: Self::EVENT_KIND.into(),
                         actual: event.kind,
-                    })?;
+                    });
                 }
 
                 $(let mut $attribute = None;)+
