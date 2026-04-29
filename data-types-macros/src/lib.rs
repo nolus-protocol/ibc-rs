@@ -74,7 +74,9 @@ macro_rules! define_attribute {
 
                 value
                     .value_str()
-                    .map_err(|e| Self::Error::invalid_raw_data(format!("attribute value: {e}")))?
+                    .map_err(|e| {
+                        Self::Error::invalid_raw_data(format_args!("attribute value: {e}"))
+                    })?
                     .parse()
             }
         }
@@ -179,7 +181,7 @@ macro_rules! define_event {
                 }
 
                 $(let $attribute = $attribute.ok_or(
-                    Self::Error::missing_raw_data(format!("Attribute {} is not set!", <$attribute_type>::FRIENDLY_NAME))
+                    Self::Error::missing_raw_data(format_args!("Attribute {} is not set!", <$attribute_type>::FRIENDLY_NAME))
                 )?;)+
 
                 Ok(Self {
@@ -194,16 +196,19 @@ macro_rules! define_event {
             fn try_from(event: abci::Event) -> Result<Self, Self::Error> {
                 (
                     event.kind,
-                    event.attributes.iter().map(|attribute| {
-                        Ok((
-                            attribute
-                                .key_str()
-                                .map_err(|e| Self::Error::invalid_raw_data(format!("attribute key: {e}")))?,
-                            attribute
-                                .value_str()
-                                .map_err(|e| Self::Error::invalid_raw_data(format!("attribute value: {e}")))?,
-                        ))
-                    }).collect::<Result<Vec<_>, Self::Error>>()?
+                    event.attributes
+                        .iter()
+                        .map(|attribute| {
+                            Ok((
+                                attribute
+                                    .key_str()
+                                    .map_err(|e| Self::Error::invalid_raw_data(format_args!("attribute key: {e}")))?,
+                                attribute
+                                    .value_str()
+                                    .map_err(|e| Self::Error::invalid_raw_data(format_args!("attribute value: {e}")))?,
+                            ))
+                        })
+                        .collect::<Result<Vec<_>, Self::Error>>()?,
                 ).try_into()
             }
         }
