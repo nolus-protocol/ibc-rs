@@ -1,6 +1,7 @@
 #![no_std]
 
 pub use ibc_core_host_types::error::DecodingError;
+pub use tendermint::abci::{Event, EventAttribute};
 
 pub trait Newtype {
     type Inner;
@@ -43,7 +44,7 @@ macro_rules! define_attribute {
             type Inner = $inner_type;
         }
 
-        impl From<$type> for abci::EventAttribute {
+        impl From<$type> for $crate::EventAttribute {
             fn from($type(inner): $type) -> Self {
                 ($key, $into(inner)).into()
             }
@@ -57,10 +58,10 @@ macro_rules! define_attribute {
             }
         }
 
-        impl TryFrom<abci::EventAttribute> for $type {
+        impl TryFrom<$crate::EventAttribute> for $type {
             type Error = <Self as ::core::str::FromStr>::Err;
 
-            fn try_from(value: abci::EventAttribute) -> Result<Self, Self::Error> {
+            fn try_from(value: $crate::EventAttribute) -> Result<Self, Self::Error> {
                 let key_str = value
                     .key_str()
                     .map_err(|_| Self::Error::missing_raw_data("attribute key"))?;
@@ -128,7 +129,7 @@ macro_rules! define_event {
             )+
         }
 
-        impl From<$type> for abci::Event {
+        impl From<$type> for $crate::Event {
             fn from(event: $type) -> Self {
                 Self {
                     kind: <$type>::EVENT_KIND.into(),
@@ -190,10 +191,10 @@ macro_rules! define_event {
             }
         }
 
-        impl TryFrom<abci::Event> for $type {
+        impl TryFrom<$crate::Event> for $type {
             type Error = $crate::DecodingError;
 
-            fn try_from(event: abci::Event) -> Result<Self, Self::Error> {
+            fn try_from(event: $crate::Event) -> Result<Self, Self::Error> {
                 (
                     event.kind,
                     event.attributes

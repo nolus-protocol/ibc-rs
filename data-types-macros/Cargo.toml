@@ -10,3 +10,4 @@ authors.workspace = true
 
 [dependencies]
 ibc-core-host-types = { workspace = true }
+tendermint = { workspace = true }

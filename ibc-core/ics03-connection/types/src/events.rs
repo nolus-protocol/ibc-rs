@@ -3,7 +3,6 @@
 use data_types_macros::{define_attribute, define_event};
 use ibc_core_host_types::identifiers::{ClientId, ConnectionId};
 use ibc_primitives::prelude::*;
-use tendermint::abci;
 
 define_attribute!(
     "connection_id" => ConnectionIdAttribute(ConnectionId) {

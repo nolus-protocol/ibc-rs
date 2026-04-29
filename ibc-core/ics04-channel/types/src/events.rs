@@ -6,7 +6,6 @@ use ibc_core_host_types::error::DecodingError;
 use ibc_core_host_types::identifiers::{ChannelId, ConnectionId, PortId, Sequence};
 use ibc_primitives::prelude::*;
 use subtle_encoding::hex;
-use tendermint::abci;
 
 use super::acknowledgement::Acknowledgement;
 use super::channel::Order;

@@ -8,7 +8,6 @@ use ibc_core_host_types::error::DecodingError;
 use ibc_core_host_types::identifiers::{ClientId, ClientType};
 use ibc_primitives::prelude::*;
 use subtle_encoding::hex;
-use tendermint::abci;
 
 use crate::height::Height;
 
@@ -118,17 +117,18 @@ mod tests {
     use core::{any::Any, str::FromStr as _};
 
     use rstest::*;
+    use tendermint::abci::{Event, EventAttribute};
 
     use super::*;
 
     #[rstest]
     #[case(
-        abci::Event {
+        Event {
             kind: CreateClient::EVENT_KIND.to_owned(),
             attributes: vec![
-                abci::EventAttribute::from(("client_id", "07-tendermint-0")),
-                abci::EventAttribute::from(("client_type", "07-tendermint")),
-                abci::EventAttribute::from(("consensus_height", "1-10")),
+                EventAttribute::from(("client_id", "07-tendermint-0")),
+                EventAttribute::from(("client_type", "07-tendermint")),
+                EventAttribute::from(("consensus_height", "1-10")),
             ],
         },
         Ok(CreateClient::new(
@@ -138,12 +138,12 @@ mod tests {
         )),
     )]
     #[case(
-        abci::Event {
+        Event {
             kind: "some_other_event".to_owned(),
             attributes: vec![
-                abci::EventAttribute::from(("client_id", "07-tendermint-0")),
-                abci::EventAttribute::from(("client_type", "07-tendermint")),
-                abci::EventAttribute::from(("consensus_height", "1-10")),
+                EventAttribute::from(("client_id", "07-tendermint-0")),
+                EventAttribute::from(("client_type", "07-tendermint")),
+                EventAttribute::from(("consensus_height", "1-10")),
             ],
         },
         Err(DecodingError::MismatchedResourceName {
@@ -152,17 +152,17 @@ mod tests {
         })
     )]
     #[case(
-        abci::Event {
+        Event {
             kind: CreateClient::EVENT_KIND.to_owned(),
             attributes: vec![
-                abci::EventAttribute::from(("client_type", "07-tendermint")),
-                abci::EventAttribute::from(("consensus_height", "1-10")),
+                EventAttribute::from(("client_type", "07-tendermint")),
+                EventAttribute::from(("consensus_height", "1-10")),
             ],
         },
         Err(DecodingError::missing_raw_data("attribute key")),
     )]
     fn test_create_client_try_from(
-        #[case] event: abci::Event,
+        #[case] event: Event,
         #[case] expected: Result<CreateClient, DecodingError>,
     ) {
         let result = CreateClient::try_from(event);
@@ -178,14 +178,14 @@ mod tests {
 
     #[rstest]
     #[case(
-        abci::Event {
+        Event {
             kind: UpdateClient::EVENT_KIND.to_owned(),
             attributes: vec![
-                abci::EventAttribute::from(("client_id", "07-tendermint-0")),
-                abci::EventAttribute::from(("client_type", "07-tendermint")),
-                abci::EventAttribute::from(("consensus_height", "1-10")),
-                abci::EventAttribute::from(("consensus_heights", "1-10,1-11")),
-                abci::EventAttribute::from(("header", "1234")),
+                EventAttribute::from(("client_id", "07-tendermint-0")),
+                EventAttribute::from(("client_type", "07-tendermint")),
+                EventAttribute::from(("consensus_height", "1-10")),
+                EventAttribute::from(("consensus_heights", "1-10,1-11")),
+                EventAttribute::from(("header", "1234")),
             ],
         },
         Ok(UpdateClient::new(
@@ -197,14 +197,14 @@ mod tests {
         )),
     )]
     #[case(
-        abci::Event {
+        Event {
             kind: "some_other_event".to_owned(),
             attributes: vec![
-                abci::EventAttribute::from(("client_id", "07-tendermint-0")),
-                abci::EventAttribute::from(("client_type", "07-tendermint")),
-                abci::EventAttribute::from(("consensus_height", "1-10")),
-                abci::EventAttribute::from(("consensus_heights", "1-10,1-11")),
-                abci::EventAttribute::from(("header", "1234")),
+                EventAttribute::from(("client_id", "07-tendermint-0")),
+                EventAttribute::from(("client_type", "07-tendermint")),
+                EventAttribute::from(("consensus_height", "1-10")),
+                EventAttribute::from(("consensus_heights", "1-10,1-11")),
+                EventAttribute::from(("header", "1234")),
             ],
         },
         Err(DecodingError::MismatchedResourceName {
@@ -213,19 +213,19 @@ mod tests {
         }),
     )]
     #[case(
-        abci::Event {
+        Event {
             kind: UpdateClient::EVENT_KIND.to_owned(),
             attributes: vec![
-                abci::EventAttribute::from(("client_type", "07-tendermint")),
-                abci::EventAttribute::from(("consensus_height", "1-10")),
-                abci::EventAttribute::from(("consensus_heights", "1-10,1-11")),
-                abci::EventAttribute::from(("header", "1234")),
+                EventAttribute::from(("client_type", "07-tendermint")),
+                EventAttribute::from(("consensus_height", "1-10")),
+                EventAttribute::from(("consensus_heights", "1-10,1-11")),
+                EventAttribute::from(("header", "1234")),
             ],
         },
         Err(DecodingError::missing_raw_data("attribute key")),
     )]
     fn test_update_client_try_from(
-        #[case] event: abci::Event,
+        #[case] event: Event,
         #[case] expected: Result<UpdateClient, DecodingError>,
     ) {
         let result = UpdateClient::try_from(event);
