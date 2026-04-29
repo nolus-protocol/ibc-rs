@@ -18,7 +18,7 @@ define_attribute!(
     "connection_id" => ConnectionIdAttribute(ConnectionId) {
         friendly_name = "connection ID",
         into = String::from,
-        try_from = |connection_id: &str| connection_id.parse().map_err(Into::into),
+        parse = |connection_id: &str| connection_id.parse().map_err(Into::into),
     }
 );
 
@@ -26,7 +26,7 @@ define_attribute!(
     "port_id" => PortIdAttribute(PortId) {
         friendly_name = "port ID",
         into = String::from,
-        try_from = |port_id: &str| port_id.parse().map_err(Into::into),
+        parse = |port_id: &str| port_id.parse().map_err(Into::into),
     }
 );
 
@@ -34,7 +34,7 @@ define_attribute!(
     "counterparty_port_id" => CounterpartyPortIdAttribute(PortId) {
         friendly_name = "counterparty port ID",
         into = String::from,
-        try_from = |port_id: &str| port_id.parse().map_err(Into::into),
+        parse = |port_id: &str| port_id.parse().map_err(Into::into),
     }
 );
 
@@ -42,7 +42,7 @@ define_attribute!(
     "channel_id" => ChannelIdAttribute(ChannelId) {
         friendly_name = "channel ID",
         into = String::from,
-        try_from = |channel_id: &str| channel_id.parse().map_err(Into::into),
+        parse = |channel_id: &str| channel_id.parse().map_err(Into::into),
     }
 );
 
@@ -50,7 +50,7 @@ define_attribute!(
     "counterparty_channel_id" => CounterpartyChannelIdAttribute(ChannelId) {
         friendly_name = "counterparty channel ID",
         into = String::from,
-        try_from = |channel_id: &str| channel_id.parse().map_err(Into::into),
+        parse = |channel_id: &str| channel_id.parse().map_err(Into::into),
     }
 );
 
@@ -58,7 +58,7 @@ define_attribute!(
     "counterparty_channel_id" => MaybeCounterpartyChannelIdAttribute(Option<ChannelId>) {
         friendly_name = "counterparty channel ID",
         into = |channel_id: Option<ChannelId>| channel_id.map_or_else(String::new, Into::into),
-        try_from = |channel_id: &str| {
+        parse = |channel_id: &str| {
             if channel_id.is_empty() {
                 Ok(None)
             } else {
@@ -72,7 +72,7 @@ define_attribute!(
     "version" => VersionAttribute(Version) {
         friendly_name = "version",
         into = String::from,
-        try_from = |version: &str| Ok(String::from(version).into()),
+        parse = |version: &str| Ok(String::from(version).into()),
     }
 );
 
@@ -80,7 +80,7 @@ define_attribute!(
     "packet_sequence" => SequenceAttribute(Sequence) {
         friendly_name = "version",
         into = |sequence: Sequence| sequence.to_string(),
-        try_from = |sequence: &str| sequence.parse().map_err(Into::into),
+        parse = |sequence: &str| sequence.parse().map_err(Into::into),
     }
 );
 
@@ -92,7 +92,7 @@ define_attribute!(
                 .expect("Never fails because hexadecimal is valid UTF8")
                 .to_string()
         },
-        try_from = |data: &str| hex::decode(data).map_err(|e| {
+        parse = |data: &str| hex::decode(data).map_err(|e| {
             DecodingError::invalid_raw_data(format!("packet data attribute value: {e}"))
         }),
     }
@@ -102,7 +102,7 @@ define_attribute!(
     "packet_src_port" => SrcPortIdAttribute(PortId) {
         friendly_name = "packet source port ID",
         into = String::from,
-        try_from = |port_id: &str| port_id.parse().map_err(Into::into),
+        parse = |port_id: &str| port_id.parse().map_err(Into::into),
     }
 );
 
@@ -110,7 +110,7 @@ define_attribute!(
     "packet_src_channel" => SrcChannelIdAttribute(ChannelId) {
         friendly_name = "packet source channel ID",
         into = String::from,
-        try_from = |channel_id: &str| channel_id.parse().map_err(Into::into),
+        parse = |channel_id: &str| channel_id.parse().map_err(Into::into),
     }
 );
 
@@ -118,7 +118,7 @@ define_attribute!(
     "packet_dst_port" => DstPortIdAttribute(PortId) {
         friendly_name = "packet destination port ID",
         into = String::from,
-        try_from = |port_id: &str| port_id.parse().map_err(Into::into),
+        parse = |port_id: &str| port_id.parse().map_err(Into::into),
     }
 );
 
@@ -126,7 +126,7 @@ define_attribute!(
     "packet_dst_channel" => DstChannelIdAttribute(ChannelId) {
         friendly_name = "packet destination channel ID",
         into = String::from,
-        try_from = |channel_id: &str| channel_id.parse().map_err(Into::into),
+        parse = |channel_id: &str| channel_id.parse().map_err(Into::into),
     }
 );
 
@@ -134,7 +134,7 @@ define_attribute!(
     "packet_channel_ordering" => ChannelOrderingAttribute(Order) {
         friendly_name = "packet destination channel ID",
         into = |ordering: Order| ordering.to_string(),
-        try_from = |ordering: &str| ordering.parse().map_err(|e| DecodingError::invalid_raw_data(format_args!("packet channel ordering: {e}"))),
+        parse = |ordering: &str| ordering.parse().map_err(|e| DecodingError::invalid_raw_data(format_args!("packet channel ordering: {e}"))),
     }
 );
 
@@ -142,7 +142,7 @@ define_attribute!(
     "packet_timeout_height" => TimeoutHeightAttribute(TimeoutHeight) {
         friendly_name = "packet timeout height",
         into = TimeoutHeight::to_event_attribute_value,
-        try_from = |height: &str| {
+        parse = |height: &str| {
             let no_timeout = TimeoutHeight::no_timeout();
 
             if height == no_timeout.to_event_attribute_value() {
@@ -158,7 +158,7 @@ define_attribute!(
     "packet_timeout_timestamp" => TimeoutTimestampAttribute(TimeoutTimestamp) {
         friendly_name = "packet timeout timestamp",
         into = |timeout_timestamp: TimeoutTimestamp| timeout_timestamp.nanoseconds().to_string(),
-        try_from = |height: &str| {
+        parse = |height: &str| {
             height
                 .parse::<u64>()
                 .map(Into::into)
@@ -175,7 +175,7 @@ define_attribute!(
                 .expect("Never fails because hexadecimal is valid UTF8")
                 .to_string()
         },
-        try_from = |ack: &str| {
+        parse = |ack: &str| {
             hex::decode(ack)
                 .map_err(|e| {
                     DecodingError::invalid_raw_data(format!("packet acknowledge attribute value: {e}"))
@@ -189,7 +189,7 @@ define_attribute!(
     "connection_id" => PacketConnectionIdAttribute(ConnectionId) {
         friendly_name = "connection ID",
         into = String::from,
-        try_from = |connection_id: &str| connection_id.parse().map_err(Into::into),
+        parse = |connection_id: &str| connection_id.parse().map_err(Into::into),
     }
 );
 

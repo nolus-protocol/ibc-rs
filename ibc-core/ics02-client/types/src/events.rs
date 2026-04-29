@@ -10,14 +10,13 @@ use ibc_primitives::prelude::*;
 use subtle_encoding::hex;
 use tendermint::abci;
 
-use self::str::FromStr;
 use crate::height::Height;
 
 define_attribute!(
     "client_id" => ClientIdAttribute(ClientId) {
         friendly_name = "client ID",
         into = String::from,
-        try_from = |client_id: &str| client_id.parse().map_err(Into::into),
+        parse = |client_id: &str| client_id.parse().map_err(Into::into),
     }
 );
 
@@ -25,7 +24,7 @@ define_attribute!(
     "client_type" => ClientTypeAttribute(ClientType) {
         friendly_name = "client type",
         into = String::from,
-        try_from = |client_type: &str| client_type.parse().map_err(Into::into),
+        parse = |client_type: &str| client_type.parse().map_err(Into::into),
     }
 );
 
@@ -33,7 +32,7 @@ define_attribute!(
     "consensus_height" => ConsensusHeightAttribute(Height) {
         friendly_name = "consensus height",
         into = String::from,
-        try_from = str::parse,
+        parse = str::parse,
     }
 );
 
@@ -59,7 +58,7 @@ define_attribute!(
                 Ok(())
             }).to_string()
         },
-        try_from = |heights: &str| heights.split(',').map(Height::from_str).collect::<Result<_, _>>(),
+        parse = |heights: &str| heights.split(',').map(Height::from_str).collect::<Result<_, _>>(),
     }
 );
 
@@ -69,7 +68,7 @@ define_attribute!(
         into = |header: Vec<u8>| str::from_utf8(&hex::encode(header))
             .expect("never fails because hexadecimal is valid UTF-8")
             .to_string(),
-        try_from = |header| hex::decode(header).map_err(|e| {
+        parse = |header| hex::decode(header).map_err(|e| {
             DecodingError::invalid_raw_data(format!("header attribute value: {e}"))
         }),
     }
@@ -116,7 +115,7 @@ define_event!(
 
 #[cfg(test)]
 mod tests {
-    use core::any::Any;
+    use core::{any::Any, str::FromStr as _};
 
     use rstest::*;
 

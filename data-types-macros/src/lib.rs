@@ -11,7 +11,7 @@ macro_rules! define_attribute {
     ($key:expr => $type:ident ( $inner_type:ty ) {
         friendly_name = $friendly_name:expr,
         into = $into:expr,
-        try_from = $try_from:expr $(,)?
+        parse = $parse:expr $(,)?
     }) => {
         #[cfg_attr(
             feature = "parity-scale-codec",
@@ -49,8 +49,16 @@ macro_rules! define_attribute {
             }
         }
 
+        impl ::core::str::FromStr for $type {
+            type Err = $crate::DecodingError;
+
+            fn from_str(s: &str) -> Result<Self, Self::Err> {
+                $parse(s).map(Self)
+            }
+        }
+
         impl TryFrom<abci::EventAttribute> for $type {
-            type Error = $crate::DecodingError;
+            type Error = <Self as ::core::str::FromStr>::Err;
 
             fn try_from(value: abci::EventAttribute) -> Result<Self, Self::Error> {
                 let key_str = value
@@ -64,12 +72,10 @@ macro_rules! define_attribute {
                     });
                 }
 
-                $try_from(
-                    value.value_str().map_err(|e| {
-                        Self::Error::missing_raw_data(format!("attribute value: {e}"))
-                    })?,
-                )
-                .map(Self)
+                value
+                    .value_str()
+                    .map_err(|e| Self::Error::invalid_raw_data(format!("attribute value: {e}")))?
+                    .parse()
             }
         }
     };
