@@ -165,7 +165,14 @@ macro_rules! define_event {
 
                     match key {
                         $(<$attribute_type>::ATTRIBUTE_KEY => {
-                            $attribute = Some(value.as_ref().parse()?);
+                            if $attribute.is_none() {
+                                $attribute = Some(value.as_ref().parse()?);
+                            } else {
+                                return Err(Self::Error::invalid_raw_data(format_args!(
+                                    "Duplicate attribute value found for attribute {}!",
+                                    <$attribute_type>::FRIENDLY_NAME,
+                                )));
+                            }
                         })+
                         _ => {}
                     }
