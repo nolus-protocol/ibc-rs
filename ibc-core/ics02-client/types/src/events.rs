@@ -2,6 +2,8 @@
 
 #![expect(deprecated)]
 
+use core::fmt::{self, Display, Formatter};
+
 use data_types_macros::{define_attribute, define_event};
 use derive_more::From;
 use ibc_core_host_types::{
@@ -40,25 +42,7 @@ define_attribute!(
 define_attribute!(
     "consensus_heights" => ConsensusHeightsAttribute(Vec<Height>) {
         friendly_name = "consensus heights",
-        into = |heights: Vec<Height>| {
-            use core::fmt::{Display, from_fn};
-
-            from_fn(|f| {
-                let mut iter = heights.iter();
-
-                if let Some(first) = iter.next() {
-                    Display::fmt(first, f)?;
-
-                    for element in iter {
-                        f.write_str(",")?;
-
-                        Display::fmt(element, f)?;
-                    }
-                }
-
-                Ok(())
-            }).to_string()
-        },
+        into = |heights: Vec<Height>| DisplayList(&heights).to_string(),
         parse = |heights: &str| heights.split(',').map(Height::from_str).collect::<Result<_, _>>(),
     }
 );
@@ -113,6 +97,29 @@ define_event!(
         consensus_height: ConsensusHeightAttribute,
     }
 );
+
+struct DisplayList<'r, T>(&'r [T])
+where
+    T: Display;
+
+impl<T> Display for DisplayList<'_, T>
+where
+    T: Display,
+{
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        if let [head, tail @ ..] = self.0 {
+            head.fmt(f)?;
+
+            for element in tail {
+                f.write_str(",")?;
+
+                element.fmt(f)?;
+            }
+        }
+
+        Ok(())
+    }
+}
 
 #[cfg(test)]
 mod tests {
