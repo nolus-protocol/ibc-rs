@@ -1,8 +1,5 @@
 //! Protocol logic specific to processing ICS3 messages of type `MsgConnectionOpenAck`.
 
-use std::string::ToString;
-use std::vec;
-
 use ibc_core_client::context::prelude::{ClientStateCommon, ClientStateValidation, ConsensusState};
 use ibc_core_client::{context::ClientValidationContext, types::error::ClientError};
 use ibc_core_connection_types::error::ConnectionError;
@@ -13,7 +10,10 @@ use ibc_core_handler_types::events::{IbcEvent, MessageEvent};
 use ibc_core_host::types::identifiers::ClientId;
 use ibc_core_host::types::path::{ClientConsensusStatePath, ConnectionPath, Path};
 use ibc_core_host::{ExecutionContext, ValidationContext};
-use ibc_primitives::proto::{Any, Protobuf};
+use ibc_primitives::{
+    prelude::{vec, ToString},
+    proto::{Any, Protobuf},
+};
 
 pub fn validate<Ctx>(ctx_a: &Ctx, msg: MsgConnectionOpenAck) -> Result<(), ConnectionError>
 where
