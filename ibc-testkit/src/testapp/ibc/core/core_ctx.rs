@@ -42,9 +42,9 @@ where
         consensus_states_binding
             .get(&height.revision_height())
             .cloned()
-            .ok_or(HostError::missing_state(
-                ClientError::MissingLocalConsensusState(*height),
-            ))
+            .ok_or_else(|| {
+                HostError::missing_state(ClientError::MissingLocalConsensusState(*height))
+            })
     }
 }
 

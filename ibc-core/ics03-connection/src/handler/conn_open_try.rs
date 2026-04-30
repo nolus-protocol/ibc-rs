@@ -65,7 +65,6 @@ where
         let prefix_on_b = ctx_b.commitment_prefix();
 
         {
-            //to stay
             let expected_conn_end_on_a = ConnectionEnd::new(
                 State::Init,
                 client_id_on_a.clone(),
