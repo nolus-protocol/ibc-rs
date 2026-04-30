@@ -24,6 +24,10 @@ pub struct MsgConnectionOpenTry {
     /// ClientId on B that the connection is being opened for
     pub client_id_on_b: ClientId,
     /// ClientState of client tracking chain B on chain A
+    #[deprecated(
+        since = "0.51.1",
+        note = "Already veriied via the connection proof. Removed in **IBC v2 (Eureka / ICS-03 v2)**"
+    )]
     #[cfg_attr(feature = "arbitrary", arbitrary(with = ibc_primitives::arb_protobuf_any))]
     pub client_state_of_b_on_a: Any,
     /// ClientId, ConnectionId and prefix of chain A
@@ -33,17 +37,35 @@ pub struct MsgConnectionOpenTry {
     /// proof of ConnectionEnd stored on Chain A during ConnOpenInit
     pub proof_conn_end_on_a: CommitmentProofBytes,
     /// proof that chain A has stored ClientState of chain B on its client
+    #[deprecated(
+        since = "0.51.1",
+        note = "Redundant proof covered by the light client's trust model. Removed in **IBC v2 (Eureka / ICS-03 v2)**"
+    )]
     pub proof_client_state_of_b_on_a: CommitmentProofBytes,
     /// proof that chain A has stored ConsensusState of chain B on its client
+    #[deprecated(
+        since = "0.51.1",
+        note = "Redundant proof covered by the light client's trust model. Removed in **IBC v2 (Eureka / ICS-03 v2)**"
+    )]
     pub proof_consensus_state_of_b_on_a: CommitmentProofBytes,
     /// Height at which all proofs in this message were taken
+    ///
+    /// Renamed to 'proof_height' in IBCv2
     pub proofs_height_on_a: Height,
-    /// height of latest header of chain A that updated the client on chain B
+    /// height of latest header of chain B that updated the client on chain A
+    #[deprecated(
+        since = "0.51.1",
+        note = "Redundant proof covered by the light client's trust model. Removed in **IBC v2 (Eureka / ICS-03 v2)**"
+    )]
     pub consensus_height_of_b_on_a: Height,
     pub delay_period: Duration,
     pub signer: Signer,
     /// optional proof of host state machines (chain B) that are unable to
     /// introspect their own consensus state
+    #[deprecated(
+        since = "0.51.1",
+        note = "Redundant proof covered by the light client's trust model. Removed in **IBC v2 (Eureka / ICS-03 v2)**"
+    )]
     pub proof_consensus_state_of_b: Option<CommitmentProofBytes>,
 
     #[deprecated(since = "0.22.0")]
