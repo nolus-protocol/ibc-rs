@@ -32,6 +32,22 @@ use ibc_query::core::context::{ProvableContext, QueryContext};
 use super::types::{MockIbcStore, DEFAULT_BLOCK_TIME_SECS};
 use crate::testapp::ibc::clients::{AnyClientState, AnyConsensusState};
 
+impl<S> MockIbcStore<S>
+where
+    S: ProvableStore + Debug,
+{
+    fn host_consensus_state(&self, height: &Height) -> Result<AnyConsensusState, HostError> {
+        let consensus_states_binding = self.host_consensus_states.lock();
+
+        consensus_states_binding
+            .get(&height.revision_height())
+            .cloned()
+            .ok_or_else(|| {
+                HostError::missing_state(ClientError::MissingLocalConsensusState(*height))
+            })
+    }
+}
+
 impl<S> ValidationContext for MockIbcStore<S>
 where
     S: ProvableStore + Debug,
@@ -58,56 +74,6 @@ where
         self.client_counter
             .get(StoreHeight::Pending, &NextClientSequencePath)
             .ok_or(HostError::missing_state("client counter"))
-    }
-
-    fn host_consensus_state(&self, height: &Height) -> Result<Self::HostConsensusState, HostError> {
-        let consensus_states_binding = self.host_consensus_states.lock();
-
-        consensus_states_binding
-            .get(&height.revision_height())
-            .cloned()
-            .ok_or(HostError::missing_state(
-                ClientError::MissingLocalConsensusState(*height),
-            ))
-    }
-
-    fn validate_self_client(
-        &self,
-        client_state_of_host_on_counterparty: Self::HostClientState,
-    ) -> Result<(), HostError> {
-        if client_state_of_host_on_counterparty.is_frozen() {
-            return Err(HostError::invalid_state("client unexpectedly frozen"));
-        }
-
-        let latest_height = self.host_height()?;
-
-        let self_revision_number = latest_height.revision_number();
-        if self_revision_number
-            != client_state_of_host_on_counterparty
-                .latest_height()
-                .revision_number()
-        {
-            return Err(HostError::invalid_state(format!(
-                "client is not in the same revision as the chain; expected `{}`, actual `{}`",
-                self_revision_number,
-                client_state_of_host_on_counterparty
-                    .latest_height()
-                    .revision_number()
-            )));
-        }
-
-        let host_current_height = latest_height.increment();
-        if client_state_of_host_on_counterparty.latest_height() >= host_current_height {
-            return Err(HostError::invalid_state(
-                format!(
-                    "counterparty client state: client latest height `{}` should be less than chain height `{}`",
-                    client_state_of_host_on_counterparty.latest_height(),
-                    host_current_height
-                ),
-            ));
-        }
-
-        Ok(())
     }
 
     fn connection_end(&self, conn_id: &ConnectionId) -> Result<ConnectionEnd, HostError> {

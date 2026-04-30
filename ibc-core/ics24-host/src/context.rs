@@ -39,9 +39,6 @@ pub trait ValidationContext {
     /// Returns the current timestamp of the local chain.
     fn host_timestamp(&self) -> Result<Timestamp, HostError>;
 
-    /// Returns the `ConsensusState` of the host (local) chain at a specific height.
-    fn host_consensus_state(&self, height: &Height) -> Result<Self::HostConsensusState, HostError>;
-
     /// Returns a natural number, counting how many clients have been created
     /// thus far. The value of this counter should increase only via method
     /// `ExecutionContext::increase_client_counter`.
@@ -49,20 +46,6 @@ pub trait ValidationContext {
 
     /// Returns the ConnectionEnd for the given identifier `conn_id`.
     fn connection_end(&self, conn_id: &ConnectionId) -> Result<ConnectionEnd, HostError>;
-
-    /// Validates the `ClientState` of the host chain stored on the counterparty
-    /// chain against the host's internal state.
-    ///
-    /// For more information on the specific requirements for validating the
-    /// client state of a host chain, please refer to the [ICS24 host
-    /// requirements](https://github.com/cosmos/ibc/tree/main/spec/core/ics-024-host-requirements#client-state-validation)
-    ///
-    /// Additionally, implementations specific to individual chains can be found
-    /// in the `ibc-core/ics24-host` module.
-    fn validate_self_client(
-        &self,
-        client_state_of_host_on_counterparty: Self::HostClientState,
-    ) -> Result<(), HostError>;
 
     /// Returns the prefix that the local chain uses in the KV store.
     fn commitment_prefix(&self) -> CommitmentPrefix;

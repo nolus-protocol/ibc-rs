@@ -1,20 +1,19 @@
 //! Protocol logic specific to processing ICS3 messages of type `MsgConnectionOpenAck`.
 
-use ibc_core_client::context::prelude::*;
-use ibc_core_client::types::error::ClientError;
+use std::string::ToString;
+use std::vec;
+
+use ibc_core_client::context::prelude::{ClientStateCommon, ClientStateValidation, ConsensusState};
+use ibc_core_client::{context::ClientValidationContext, types::error::ClientError};
 use ibc_core_connection_types::error::ConnectionError;
 use ibc_core_connection_types::events::OpenAck;
 use ibc_core_connection_types::msgs::MsgConnectionOpenAck;
 use ibc_core_connection_types::{ConnectionEnd, Counterparty, State};
 use ibc_core_handler_types::events::{IbcEvent, MessageEvent};
 use ibc_core_host::types::identifiers::ClientId;
-use ibc_core_host::types::path::{ClientConsensusStatePath, ClientStatePath, ConnectionPath, Path};
+use ibc_core_host::types::path::{ClientConsensusStatePath, ConnectionPath, Path};
 use ibc_core_host::{ExecutionContext, ValidationContext};
-use ibc_primitives::prelude::*;
 use ibc_primitives::proto::{Any, Protobuf};
-use ibc_primitives::ToVec;
-
-use crate::handler::{pack_host_consensus_state, unpack_host_client_state};
 
 pub fn validate<Ctx>(ctx_a: &Ctx, msg: MsgConnectionOpenAck) -> Result<(), ConnectionError>
 where
@@ -46,13 +45,6 @@ where
     }
 
     let client_val_ctx_a = ctx_a.get_client_validation_context();
-
-    let client_state_of_a_on_b = unpack_host_client_state::<Ctx::HostClientState>(
-        msg.client_state_of_a_on_b.clone(),
-        vars.client_id_on_b(),
-    )?;
-
-    ctx_a.validate_self_client(client_state_of_a_on_b)?;
 
     msg.version
         .verify_is_supported(vars.conn_end_on_a.versions())?;
@@ -103,33 +95,8 @@ where
             )?;
         }
 
-        client_state_of_b_on_a.verify_membership(
-            prefix_on_b,
-            &msg.proof_client_state_of_a_on_b,
-            consensus_state_of_b_on_a.root(),
-            Path::ClientState(ClientStatePath::new(vars.client_id_on_b().clone())),
-            msg.client_state_of_a_on_b.to_vec(),
-        )?;
-
-        let expected_consensus_state_of_a_on_b =
-            ctx_a.host_consensus_state(&msg.consensus_height_of_a_on_b)?;
-
-        let stored_consensus_state_of_a_on_b =
-            pack_host_consensus_state(expected_consensus_state_of_a_on_b, vars.client_id_on_b());
-
-        let client_cons_state_path_on_b = ClientConsensusStatePath::new(
-            vars.client_id_on_b().clone(),
-            msg.consensus_height_of_a_on_b.revision_number(),
-            msg.consensus_height_of_a_on_b.revision_height(),
-        );
-
-        client_state_of_b_on_a.verify_membership(
-            prefix_on_b,
-            &msg.proof_consensus_state_of_a_on_b,
-            consensus_state_of_b_on_a.root(),
-            Path::ClientConsensusState(client_cons_state_path_on_b),
-            stored_consensus_state_of_a_on_b.to_vec(),
-        )?;
+        // only the connection end proof is verified
+        // ref: https://github.com/cosmos/ibc-go/blob/93baefd28cdceb2540135d2519edf6ecfd8715cc/modules/core/03-connection/keeper/handshake.go#L156
     }
 
     Ok(())
