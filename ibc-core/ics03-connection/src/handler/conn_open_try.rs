@@ -1,7 +1,4 @@
 //! Protocol logic specific to processing ICS3 messages of type `MsgConnectionOpenTry`.;
-use std::string::ToString;
-use std::vec;
-
 use ibc_core_client::context::prelude::{ClientStateCommon, ClientStateValidation, ConsensusState};
 use ibc_core_client::context::ClientValidationContext;
 use ibc_core_client::types::error::ClientError;
@@ -15,7 +12,10 @@ use ibc_core_host::types::path::{
     ClientConnectionPath, ClientConsensusStatePath, ConnectionPath, Path,
 };
 use ibc_core_host::{ExecutionContext, ValidationContext};
-use ibc_primitives::proto::{Any, Protobuf};
+use ibc_primitives::{
+    prelude::{vec, ToString},
+    proto::{Any, Protobuf},
+};
 
 pub fn validate<Ctx>(ctx_b: &Ctx, msg: MsgConnectionOpenTry) -> Result<(), ConnectionError>
 where
