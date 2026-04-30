@@ -19,7 +19,6 @@ use ibc::core::handler::types::msgs::MsgEnvelope;
 use ibc::core::host::types::identifiers::ConnectionId;
 use ibc::core::host::types::path::CommitmentPath;
 use ibc::core::host::ValidationContext;
-use ibc::core::primitives::prelude::*;
 use ibc::core::primitives::Timestamp;
 use ibc_testkit::context::MockContext;
 use ibc_testkit::fixtures::applications::transfer::{
