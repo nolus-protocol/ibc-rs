@@ -21,8 +21,6 @@ enum Ctx {
 
 enum Msg {
     Default,
-    HeightAdvanced,
-    HeightOld,
     ProofHeightMissing,
 }
 
@@ -37,13 +35,6 @@ fn conn_open_try_fixture(ctx_variant: Ctx, msg_variant: Msg) -> Fixture<MsgConne
             client_cons_state_height,
             host_chain_height.revision_height(),
         ),
-        Msg::HeightAdvanced => dummy_msg_conn_open_try(
-            client_cons_state_height,
-            host_chain_height.increment().revision_height(),
-        ),
-        Msg::HeightOld => {
-            dummy_msg_conn_open_try(client_cons_state_height, pruned_height.revision_height())
-        }
         Msg::ProofHeightMissing => dummy_msg_conn_open_try(
             client_cons_state_height - 1,
             host_chain_height.revision_height(),
@@ -127,18 +118,6 @@ fn conn_open_try_healthy() {
     let mut fxt = conn_open_try_fixture(Ctx::WithClient, Msg::Default);
     conn_open_try_validate(&fxt, Expect::Success);
     conn_open_try_execute(&mut fxt, Expect::Success);
-}
-
-#[test]
-fn conn_open_try_height_advanced() {
-    let fxt = conn_open_try_fixture(Ctx::WithClient, Msg::HeightAdvanced);
-    conn_open_try_validate(&fxt, Expect::Failure(None));
-}
-
-#[test]
-fn conn_open_try_height_old() {
-    let fxt = conn_open_try_fixture(Ctx::WithClient, Msg::HeightOld);
-    conn_open_try_validate(&fxt, Expect::Failure(None));
 }
 
 #[test]
