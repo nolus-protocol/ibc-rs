@@ -40,6 +40,18 @@ macro_rules! define_attribute {
             }
         }
 
+        impl From<$inner_type> for $type {
+            fn from(inner: $inner_type) -> Self {
+                Self(inner)
+            }
+        }
+
+        impl From<$type> for $inner_type {
+            fn from($type(inner): $type) -> Self {
+                inner
+            }
+        }
+
         impl $crate::Newtype for $type {
             type Inner = $inner_type;
         }
@@ -109,20 +121,15 @@ macro_rules! define_event {
         pub struct $type {
             $(
                 $(#[$($attribute_meta),+])?
-                $attribute: $attribute_type,
+                pub $attribute: $attribute_type,
             )+
         }
 
         impl $type {
             pub const EVENT_KIND: &str = $event_kind;
 
-            pub const fn new($($attribute: <$attribute_type as $crate::Newtype>::Inner,)+) -> Self {
-                Self {
-                    $($attribute: <$attribute_type>::new($attribute),)+
-                }
-            }
-
             $(
+                $(#[$($attribute_meta),+])?
                 pub const fn $attribute(&self) -> &<$attribute_type as $crate::Newtype>::Inner {
                     &self.$attribute.0
                 }

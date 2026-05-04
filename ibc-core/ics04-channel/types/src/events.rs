@@ -377,13 +377,13 @@ mod tests {
         let tests: Vec<Test> = vec![
             Test {
                 kind: OpenInit::EVENT_KIND,
-                event: OpenInit::new(
-                    port_id.clone(),
-                    channel_id.clone(),
-                    counterparty_port_id.clone(),
-                    connection_id.clone(),
-                    version.clone(),
-                )
+                event: OpenInit {
+                    port_id_on_a: port_id.clone().into(),
+                    chan_id_on_a: channel_id.clone().into(),
+                    port_id_on_b: counterparty_port_id.clone().into(),
+                    conn_id_on_a: connection_id.clone().into(),
+                    version_on_a: version.clone().into(),
+                }
                 .into(),
                 expected_keys: vec![
                     "port_id",
@@ -402,66 +402,66 @@ mod tests {
             },
             Test {
                 kind: OpenTry::EVENT_KIND,
-                event: OpenTry::new(
-                    port_id.clone(),
-                    channel_id.clone(),
-                    counterparty_port_id.clone(),
-                    counterparty_channel_id.clone(),
-                    connection_id.clone(),
-                    version,
-                )
+                event: OpenTry {
+                    port_id_on_b: port_id.clone().into(),
+                    chan_id_on_b: channel_id.clone().into(),
+                    port_id_on_a: counterparty_port_id.clone().into(),
+                    chan_id_on_a: counterparty_channel_id.clone().into(),
+                    conn_id_on_b: connection_id.clone().into(),
+                    version_on_b: version.into(),
+                }
                 .into(),
                 expected_keys: expected_keys.clone(),
                 expected_values: expected_values.clone(),
             },
             Test {
                 kind: OpenAck::EVENT_KIND,
-                event: OpenAck::new(
-                    port_id.clone(),
-                    channel_id.clone(),
-                    counterparty_port_id.clone(),
-                    counterparty_channel_id.clone(),
-                    connection_id.clone(),
-                )
+                event: OpenAck {
+                    port_id_on_a: port_id.clone().into(),
+                    chan_id_on_a: channel_id.clone().into(),
+                    port_id_on_b: counterparty_port_id.clone().into(),
+                    chan_id_on_b: counterparty_channel_id.clone().into(),
+                    conn_id_on_a: connection_id.clone().into(),
+                }
                 .into(),
                 expected_keys: expected_keys[0..5].to_vec(),
                 expected_values: expected_values[0..5].to_vec(),
             },
             Test {
                 kind: OpenConfirm::EVENT_KIND,
-                event: OpenConfirm::new(
-                    port_id.clone(),
-                    channel_id.clone(),
-                    counterparty_port_id.clone(),
-                    counterparty_channel_id.clone(),
-                    connection_id.clone(),
-                )
+                event: OpenConfirm {
+                    port_id_on_b: port_id.clone().into(),
+                    chan_id_on_b: channel_id.clone().into(),
+                    port_id_on_a: counterparty_port_id.clone().into(),
+                    chan_id_on_a: counterparty_channel_id.clone().into(),
+                    conn_id_on_b: connection_id.clone().into(),
+                }
                 .into(),
                 expected_keys: expected_keys[0..5].to_vec(),
                 expected_values: expected_values[0..5].to_vec(),
             },
             Test {
                 kind: CloseInit::EVENT_KIND,
-                event: CloseInit::new(
-                    port_id.clone(),
-                    channel_id.clone(),
-                    counterparty_port_id.clone(),
-                    counterparty_channel_id.clone(),
-                    connection_id.clone(),
-                )
+                event: CloseInit {
+                    port_id_on_a: port_id.clone().into(),
+                    chan_id_on_a: channel_id.clone().into(),
+                    port_id_on_b: counterparty_port_id.clone().into(),
+                    chan_id_on_b: counterparty_channel_id.clone().into(),
+                    conn_id_on_a: connection_id.clone().into(),
+                }
                 .into(),
                 expected_keys: expected_keys[0..5].to_vec(),
                 expected_values: expected_values[0..5].to_vec(),
             },
             Test {
                 kind: CloseConfirm::EVENT_KIND,
-                event: CloseConfirm::new(
-                    port_id,
-                    channel_id,
-                    counterparty_port_id,
-                    counterparty_channel_id,
-                    connection_id,
-                )
+                event: CloseConfirm {
+                    port_id_on_b: port_id.into(),
+                    chan_id_on_b: channel_id.into(),
+                    port_id_on_a: counterparty_port_id.into(),
+                    chan_id_on_a: counterparty_channel_id.into(),
+                    conn_id_on_b: connection_id.into(),
+                }
                 .into(),
                 expected_keys: expected_keys[0..5].to_vec(),
                 expected_values: expected_values[0..5].to_vec(),

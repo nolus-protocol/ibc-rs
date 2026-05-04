@@ -65,11 +65,11 @@ where
         msg.upgraded_consensus_state,
     )?;
 
-    let event = IbcEvent::UpgradeClient(UpgradeClient::new(
-        client_id,
-        old_client_state.client_type(),
-        latest_height,
-    ));
+    let event = IbcEvent::UpgradeClient(UpgradeClient {
+        client_id: client_id.into(),
+        client_type: old_client_state.client_type().into(),
+        consensus_height: latest_height.into(),
+    });
     ctx.emit_ibc_event(IbcEvent::Message(MessageEvent::Client))?;
     ctx.emit_ibc_event(event)?;
 

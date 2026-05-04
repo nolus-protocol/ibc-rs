@@ -140,11 +140,11 @@ mod tests {
                 EventAttribute::from(("consensus_height", "1-10")),
             ],
         },
-        Ok(CreateClient::new(
-            ClientId::from_str("07-tendermint-0").expect("should parse"),
-            ClientType::from_str("07-tendermint").expect("should parse"),
-            Height::new(1, 10).unwrap(),
-        )),
+        Ok(CreateClient {
+            client_id: ClientId::from_str("07-tendermint-0").expect("should parse").into(),
+            client_type: ClientType::from_str("07-tendermint").expect("should parse").into(),
+            consensus_height: Height::new(1, 10).unwrap().into(),
+        }),
     )]
     #[case(
         Event {
@@ -197,13 +197,13 @@ mod tests {
                 EventAttribute::from(("header", "1234")),
             ],
         },
-        Ok(UpdateClient::new(
-            ClientId::from_str("07-tendermint-0").expect("should parse"),
-            ClientType::from_str("07-tendermint").expect("should parse"),
-            Height::new(1, 10).unwrap(),
-            vec![Height::new(1, 10).unwrap(), Height::new(1, 11).unwrap()],
-            vec![0x12, 0x34],
-        )),
+        Ok(UpdateClient {
+            client_id: ClientId::from_str("07-tendermint-0").expect("should parse").into(),
+            client_type: ClientType::from_str("07-tendermint").expect("should parse").into(),
+            consensus_height: Height::new(1, 10).unwrap().into(),
+            consensus_heights: vec![Height::new(1, 10).unwrap(), Height::new(1, 11).unwrap()].into(),
+            header: vec![0x12, 0x34].into(),
+        }),
     )]
     #[case(
         Event {

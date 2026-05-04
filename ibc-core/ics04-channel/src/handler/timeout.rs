@@ -57,16 +57,16 @@ where
     let chan_end_on_a = ctx_a.channel_end(&chan_end_path_on_a)?;
 
     // In all cases, this event is emitted
-    let event = IbcEvent::TimeoutPacket(TimeoutPacket::new(
-        packet.timeout_height_on_b,
-        packet.timeout_timestamp_on_b,
-        packet.seq_on_a,
-        packet.port_id_on_a.clone(),
-        packet.chan_id_on_a.clone(),
-        packet.port_id_on_b.clone(),
-        packet.chan_id_on_b.clone(),
-        chan_end_on_a.ordering,
-    ));
+    let event = IbcEvent::TimeoutPacket(TimeoutPacket {
+        timeout_height_on_b: packet.timeout_height_on_b.into(),
+        timeout_timestamp_on_b: packet.timeout_timestamp_on_b.into(),
+        seq_on_a: packet.seq_on_a.into(),
+        port_id_on_a: packet.port_id_on_a.clone().into(),
+        chan_id_on_a: packet.chan_id_on_a.clone().into(),
+        port_id_on_b: packet.port_id_on_b.clone().into(),
+        chan_id_on_b: packet.chan_id_on_b.clone().into(),
+        ordering: chan_end_on_a.ordering.into(),
+    });
     ctx_a.emit_ibc_event(IbcEvent::Message(MessageEvent::Channel))?;
     ctx_a.emit_ibc_event(event)?;
 
@@ -108,14 +108,14 @@ where
         if let Order::Ordered = chan_end_on_a.ordering {
             let conn_id_on_a = chan_end_on_a.connection_hops()[0].clone();
 
-            let event = IbcEvent::ChannelClosed(ChannelClosed::new(
-                packet.port_id_on_a.clone(),
-                packet.chan_id_on_a.clone(),
-                chan_end_on_a.counterparty().port_id.clone(),
-                chan_end_on_a.counterparty().channel_id.clone(),
-                conn_id_on_a,
-                chan_end_on_a.ordering,
-            ));
+            let event = IbcEvent::ChannelClosed(ChannelClosed {
+                port_id_on_a: packet.port_id_on_a.clone().into(),
+                chan_id_on_a: packet.chan_id_on_a.clone().into(),
+                port_id_on_b: chan_end_on_a.counterparty().port_id.clone().into(),
+                maybe_chan_id_on_b: chan_end_on_a.counterparty().channel_id.clone().into(),
+                conn_id_on_a: conn_id_on_a.into(),
+                ordering: chan_end_on_a.ordering.into(),
+            });
             ctx_a.emit_ibc_event(IbcEvent::Message(MessageEvent::Channel))?;
             ctx_a.emit_ibc_event(event)?;
         }

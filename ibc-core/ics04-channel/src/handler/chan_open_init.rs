@@ -85,13 +85,13 @@ where
         ctx_a.log_message(format!(
             "success: channel open init with channel identifier: {chan_id_on_a}"
         ))?;
-        let core_event = IbcEvent::OpenInitChannel(OpenInit::new(
-            msg.port_id_on_a.clone(),
-            chan_id_on_a.clone(),
-            msg.port_id_on_b,
-            conn_id_on_a,
-            version,
-        ));
+        let core_event = IbcEvent::OpenInitChannel(OpenInit {
+            port_id_on_a: msg.port_id_on_a.clone().into(),
+            chan_id_on_a: chan_id_on_a.clone().into(),
+            port_id_on_b: msg.port_id_on_b.into(),
+            conn_id_on_a: conn_id_on_a.into(),
+            version_on_a: version.into(),
+        });
         ctx_a.emit_ibc_event(IbcEvent::Message(MessageEvent::Channel))?;
         ctx_a.emit_ibc_event(core_event)?;
 

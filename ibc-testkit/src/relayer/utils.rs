@@ -86,7 +86,7 @@ where
             panic!("unexpected event")
         };
 
-        let client_id_on_a = create_client_b_event.client_id().clone();
+        let client_id_on_a = create_client_b_event.client_id.into();
 
         assert_eq!(
             ValidationContext::get_client_validation_context(ctx_a.ibc_store())
@@ -189,7 +189,7 @@ where
             panic!("unexpected event")
         };
 
-        open_init_connection_event.conn_id_on_a().clone()
+        open_init_connection_event.conn_id_on_a.into()
     }
 
     /// `B` receives the connection opening attempt by `A` after `A` initiates the connection.
@@ -278,7 +278,7 @@ where
             panic!("unexpected event")
         };
 
-        open_try_connection_event.conn_id_on_b().clone()
+        open_try_connection_event.conn_id_on_b.into()
     }
 
     /// `A` receives `B`'s acknowledgement that `B` received the connection opening attempt by `A`.
@@ -489,7 +489,7 @@ where
             panic!("unexpected event")
         };
 
-        open_init_channel_event.chan_id_on_a().clone()
+        open_init_channel_event.chan_id_on_a.into()
     }
 
     /// `B` receives the channel opening attempt by `A` after `A` initiates the channel.
@@ -537,7 +537,7 @@ where
             panic!("unexpected event")
         };
 
-        open_try_channel_event.chan_id_on_b().clone()
+        open_try_channel_event.chan_id_on_b.into()
     }
 
     /// `A` receives `B`'s acknowledgement that `B` received the channel opening attempt by `A`.
@@ -829,7 +829,7 @@ where
             panic!("unexpected event")
         };
 
-        write_ack_event.acknowledgement().clone()
+        write_ack_event.acknowledgement.into()
     }
 
     /// `A` receives the acknowledgement from `B` that `B` received the packet from `A`.

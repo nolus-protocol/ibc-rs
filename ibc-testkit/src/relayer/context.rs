@@ -531,14 +531,14 @@ where
 
         // create the IBC packet type
         Packet {
-            port_id_on_a: send_packet_event.port_id_on_a().clone(),
-            chan_id_on_a: send_packet_event.chan_id_on_a().clone(),
-            seq_on_a: *send_packet_event.seq_on_a(),
-            data: send_packet_event.packet_data().to_vec(),
-            timeout_height_on_b: *send_packet_event.timeout_height_on_b(),
-            timeout_timestamp_on_b: *send_packet_event.timeout_timestamp_on_b(),
-            port_id_on_b: send_packet_event.port_id_on_b().clone(),
-            chan_id_on_b: send_packet_event.chan_id_on_b().clone(),
+            port_id_on_a: send_packet_event.port_id_on_a.into(),
+            chan_id_on_a: send_packet_event.chan_id_on_a.into(),
+            seq_on_a: send_packet_event.seq_on_a.into(),
+            data: send_packet_event.packet_data.into(),
+            timeout_height_on_b: send_packet_event.timeout_height_on_b.into(),
+            timeout_timestamp_on_b: send_packet_event.timeout_timestamp_on_b.into(),
+            port_id_on_b: send_packet_event.port_id_on_b.into(),
+            chan_id_on_b: send_packet_event.chan_id_on_b.into(),
         }
     }
 }

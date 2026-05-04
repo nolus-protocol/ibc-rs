@@ -74,11 +74,11 @@ where
 
     ctx.increase_client_counter()?;
 
-    let event = IbcEvent::CreateClient(CreateClient::new(
-        client_id.clone(),
-        client_type,
-        client_state.latest_height(),
-    ));
+    let event = IbcEvent::CreateClient(CreateClient {
+        client_id: client_id.clone().into(),
+        client_type: client_type.into(),
+        consensus_height: client_state.latest_height().into(),
+    });
     ctx.emit_ibc_event(IbcEvent::Message(MessageEvent::Client))?;
     ctx.emit_ibc_event(event)?;
 

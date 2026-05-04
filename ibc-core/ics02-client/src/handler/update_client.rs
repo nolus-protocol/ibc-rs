@@ -56,10 +56,10 @@ where
     if found_misbehaviour {
         client_state.update_state_on_misbehaviour(client_exec_ctx, &client_id, client_message)?;
 
-        let event = IbcEvent::ClientMisbehaviour(ClientMisbehaviour::new(
-            client_id,
-            client_state.client_type(),
-        ));
+        let event = IbcEvent::ClientMisbehaviour(ClientMisbehaviour {
+            client_id: client_id.into(),
+            client_type: client_state.client_type().into(),
+        });
         ctx.emit_ibc_event(IbcEvent::Message(MessageEvent::Client))?;
         ctx.emit_ibc_event(event)?;
     } else {
@@ -80,13 +80,14 @@ where
                     HostError::missing_state("updated height in client update state"),
                 )?;
 
-                IbcEvent::UpdateClient(UpdateClient::new(
-                    client_id,
-                    client_state.client_type(),
-                    *consensus_height,
-                    consensus_heights,
-                    header.to_vec(),
-                ))
+                IbcEvent::UpdateClient(UpdateClient {
+                    client_id: client_id.into(),
+                    client_type: client_state.client_type().into(),
+                    #[expect(deprecated)]
+                    consensus_height: (*consensus_height).into(),
+                    consensus_heights: consensus_heights.into(),
+                    header: header.to_vec().into(),
+                })
             };
             ctx.emit_ibc_event(IbcEvent::Message(MessageEvent::Client))?;
             ctx.emit_ibc_event(event)?;
