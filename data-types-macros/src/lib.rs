@@ -40,6 +40,18 @@ macro_rules! define_attribute {
             }
         }
 
+        impl ::core::convert::AsRef<$inner_type> for $type {
+            fn as_ref(&self) -> &$inner_type {
+                &self.0
+            }
+        }
+
+        impl ::core::borrow::Borrow<$inner_type> for $type {
+            fn borrow(&self) -> &$inner_type {
+                &self.0
+            }
+        }
+
         impl From<$inner_type> for $type {
             fn from(inner: $inner_type) -> Self {
                 Self(inner)
