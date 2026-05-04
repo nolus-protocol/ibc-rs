@@ -5,7 +5,6 @@
 use core::fmt::{self, Display, Formatter};
 
 use data_types_macros::{define_attribute, define_event};
-use derive_more::From;
 use ibc_core_host_types::{
     error::DecodingError,
     identifiers::{ClientId, ClientType},
