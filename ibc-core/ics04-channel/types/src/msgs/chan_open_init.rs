@@ -86,6 +86,7 @@ impl From<MsgChannelOpenInit> for RawMsgChannelOpenInit {
             Counterparty::new(domain_msg.port_id_on_b, None),
             domain_msg.connection_hops_on_a,
             domain_msg.version_proposal,
+            0.into(),
         );
         RawMsgChannelOpenInit {
             port_id: domain_msg.port_id_on_a.to_string(),

@@ -69,6 +69,7 @@ where
             Counterparty::new(msg.port_id_on_a.clone(), Some(msg.chan_id_on_a.clone())),
             msg.connection_hops_on_b.clone(),
             version.clone(),
+            0.into(),
         )?;
 
         let chan_end_path_on_b = ChannelEndPath::new(&msg.port_id_on_b, &chan_id_on_b);
@@ -164,6 +165,7 @@ where
             Counterparty::new(msg.port_id_on_b.clone(), None),
             vec![conn_id_on_a.clone()],
             msg.version_supported_on_a.clone(),
+            0.into(),
         )?;
         let chan_end_path_on_a = ChannelEndPath::new(&port_id_on_a, &chan_id_on_a);
 

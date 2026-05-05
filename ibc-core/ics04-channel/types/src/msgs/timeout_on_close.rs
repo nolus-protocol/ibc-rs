@@ -28,6 +28,7 @@ pub struct MsgTimeoutOnClose {
     pub proof_close_on_b: CommitmentProofBytes,
     pub proof_height_on_b: Height,
     pub signer: Signer,
+    pub upgrade_sequence_on_a: Sequence,
 }
 
 impl Protobuf<RawMsgTimeoutOnClose> for MsgTimeoutOnClose {}
@@ -59,6 +60,7 @@ impl TryFrom<RawMsgTimeoutOnClose> for MsgTimeoutOnClose {
                 .and_then(|raw_height| raw_height.try_into().ok())
                 .ok_or(DecodingError::invalid_raw_data("msg timeout proof height"))?,
             signer: raw_msg.signer.into(),
+            upgrade_sequence_on_a: raw_msg.counterparty_upgrade_sequence.into(),
         })
     }
 }
@@ -72,7 +74,7 @@ impl From<MsgTimeoutOnClose> for RawMsgTimeoutOnClose {
             proof_height: Some(domain_msg.proof_height_on_b.into()),
             next_sequence_recv: domain_msg.next_seq_recv_on_b.into(),
             signer: domain_msg.signer.to_string(),
-            counterparty_upgrade_sequence: 0,
+            counterparty_upgrade_sequence: domain_msg.upgrade_sequence_on_a.into(),
         }
     }
 }

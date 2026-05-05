@@ -21,6 +21,8 @@ use ibc_testkit::testapp::ibc::core::types::LightClientState;
 use rstest::*;
 use test_log::test;
 
+use super::UPGRADE_SEQUENCE;
+
 struct Fixture {
     ctx: MockContext,
     router: MockRouter,
@@ -63,6 +65,7 @@ fn fixture() -> Fixture {
         Counterparty::new(packet.port_id_on_b, Some(packet.chan_id_on_b)),
         vec![ConnectionId::zero()],
         Version::new("ics20-1".to_string()),
+        UPGRADE_SEQUENCE.into(),
     )
     .unwrap();
 

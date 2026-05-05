@@ -21,6 +21,8 @@ use ibc_testkit::hosts::MockHost;
 use ibc_testkit::testapp::ibc::core::types::LightClientState;
 use test_log::test;
 
+use super::UPGRADE_SEQUENCE;
+
 #[test]
 fn send_packet_processing() {
     let default_client_id = ClientId::new("07-tendermint", 0).expect("no error");
@@ -38,6 +40,7 @@ fn send_packet_processing() {
         Counterparty::new(PortId::transfer(), Some(ChannelId::zero())),
         vec![ConnectionId::zero()],
         Version::new("ics20-1".to_string()),
+        UPGRADE_SEQUENCE.into(),
     )
     .unwrap();
 

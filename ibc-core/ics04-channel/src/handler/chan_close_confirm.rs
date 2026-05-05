@@ -142,6 +142,7 @@ where
             Counterparty::new(msg.port_id_on_b.clone(), Some(msg.chan_id_on_b.clone())),
             vec![conn_id_on_a.clone()],
             chan_end_on_b.version().clone(),
+            *chan_end_on_b.upgrade_sequence(),
         )?;
         let chan_end_path_on_a = ChannelEndPath::new(port_id_on_a, chan_id_on_a);
 

@@ -9,3 +9,7 @@ pub mod recv_packet;
 pub mod send_packet;
 pub mod timeout;
 pub mod timeout_on_close;
+
+const INIT_UPGRADE_SEQUENCE: u64 = 0;
+
+const UPGRADE_SEQUENCE: u64 = 1;
