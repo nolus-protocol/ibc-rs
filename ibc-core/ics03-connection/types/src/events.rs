@@ -106,23 +106,23 @@ mod tests {
         let tests: Vec<Test> = vec![
             Test {
                 kind: OpenInit::EVENT_KIND,
-                event: OpenInit::new(
-                    conn_id_on_a.clone(),
-                    client_id_on_a.clone(),
-                    client_id_on_b.clone(),
-                )
+                event: OpenInit {
+                    conn_id_on_a: conn_id_on_a.clone().into(),
+                    client_id_on_a: client_id_on_a.clone().into(),
+                    client_id_on_b: client_id_on_b.clone().into(),
+                }
                 .into(),
                 expected_keys: vec!["connection_id", "client_id", "counterparty_client_id"],
                 expected_values: vec!["connection-0", "07-tendermint-0", "07-tendermint-1"],
             },
             Test {
                 kind: OpenTry::EVENT_KIND,
-                event: OpenTry::new(
-                    conn_id_on_b.clone(),
-                    client_id_on_b.clone(),
-                    conn_id_on_a.clone(),
-                    client_id_on_a.clone(),
-                )
+                event: OpenTry {
+                    conn_id_on_a: conn_id_on_b.clone().into(),
+                    client_id_on_a: client_id_on_b.clone().into(),
+                    conn_id_on_b: conn_id_on_a.clone().into(),
+                    client_id_on_b: client_id_on_a.clone().into(),
+                }
                 .into(),
                 expected_keys: expected_keys.clone(),
                 expected_values: vec![
@@ -134,12 +134,12 @@ mod tests {
             },
             Test {
                 kind: OpenAck::EVENT_KIND,
-                event: OpenAck::new(
-                    conn_id_on_a.clone(),
-                    client_id_on_a.clone(),
-                    conn_id_on_b.clone(),
-                    client_id_on_b.clone(),
-                )
+                event: OpenAck {
+                    conn_id_on_a: conn_id_on_a.clone().into(),
+                    client_id_on_a: client_id_on_a.clone().into(),
+                    conn_id_on_b: conn_id_on_b.clone().into(),
+                    client_id_on_b: client_id_on_b.clone().into(),
+                }
                 .into(),
                 expected_keys: expected_keys.clone(),
                 expected_values: vec![
@@ -151,8 +151,13 @@ mod tests {
             },
             Test {
                 kind: OpenConfirm::EVENT_KIND,
-                event: OpenConfirm::new(conn_id_on_b, client_id_on_b, conn_id_on_a, client_id_on_a)
-                    .into(),
+                event: OpenConfirm {
+                    conn_id_on_a: conn_id_on_b.into(),
+                    client_id_on_a: client_id_on_b.into(),
+                    conn_id_on_b: conn_id_on_a.into(),
+                    client_id_on_b: client_id_on_a.into(),
+                }
+                .into(),
                 expected_keys: expected_keys.clone(),
                 expected_values: vec![
                     "connection-1",

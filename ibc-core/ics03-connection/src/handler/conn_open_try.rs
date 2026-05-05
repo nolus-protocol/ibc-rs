@@ -113,12 +113,12 @@ where
         .counterparty()
         .connection_id()
         .ok_or(ConnectionError::InvalidCounterparty)?;
-    let event = IbcEvent::OpenTryConnection(OpenTry::new(
-        vars.conn_id_on_b.clone(),
-        msg.client_id_on_b.clone(),
-        conn_id_on_a.clone(),
-        vars.client_id_on_a.clone(),
-    ));
+    let event = IbcEvent::OpenTryConnection(OpenTry {
+        conn_id_on_a: vars.conn_id_on_b.clone().into(),
+        client_id_on_a: msg.client_id_on_b.clone().into(),
+        conn_id_on_b: conn_id_on_a.clone().into(),
+        client_id_on_b: vars.client_id_on_a.clone().into(),
+    });
     ctx_b.emit_ibc_event(IbcEvent::Message(MessageEvent::Connection))?;
     ctx_b.emit_ibc_event(event)?;
     ctx_b.log_message("success: conn_open_try verification passed".to_string())?;

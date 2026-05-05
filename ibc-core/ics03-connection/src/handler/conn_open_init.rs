@@ -65,11 +65,11 @@ where
     {
         let client_id_on_b = msg.counterparty.client_id().clone();
 
-        let event = IbcEvent::OpenInitConnection(OpenInit::new(
-            conn_id_on_a.clone(),
-            msg.client_id_on_a.clone(),
-            client_id_on_b,
-        ));
+        let event = IbcEvent::OpenInitConnection(OpenInit {
+            conn_id_on_a: conn_id_on_a.clone().into(),
+            client_id_on_a: msg.client_id_on_a.clone().into(),
+            client_id_on_b: client_id_on_b.into(),
+        });
         ctx_a.emit_ibc_event(IbcEvent::Message(MessageEvent::Connection))?;
         ctx_a.emit_ibc_event(event)?;
     }

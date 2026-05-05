@@ -125,18 +125,18 @@ pub fn send_packet_execute(
         let conn_id_on_a = &chan_end_on_a.connection_hops()[0];
 
         ctx_a.log_message("success: packet send".to_string())?;
-        let event = IbcEvent::SendPacket(SendPacket::new(
-            packet.data,
-            packet.timeout_height_on_b,
-            packet.timeout_timestamp_on_b,
-            packet.seq_on_a,
-            packet.port_id_on_a,
-            packet.chan_id_on_a,
-            packet.port_id_on_b,
-            packet.chan_id_on_b,
-            chan_end_on_a.ordering,
-            conn_id_on_a.clone(),
-        ));
+        let event = IbcEvent::SendPacket(SendPacket {
+            packet_data: packet.data.into(),
+            timeout_height_on_b: packet.timeout_height_on_b.into(),
+            timeout_timestamp_on_b: packet.timeout_timestamp_on_b.into(),
+            seq_on_a: packet.seq_on_a.into(),
+            port_id_on_a: packet.port_id_on_a.into(),
+            chan_id_on_a: packet.chan_id_on_a.into(),
+            port_id_on_b: packet.port_id_on_b.into(),
+            chan_id_on_b: packet.chan_id_on_b.into(),
+            ordering: chan_end_on_a.ordering.into(),
+            conn_id_on_a: conn_id_on_a.clone().into(),
+        });
         ctx_a.emit_ibc_event(IbcEvent::Message(MessageEvent::Channel))?;
         ctx_a.emit_ibc_event(event)?;
     }

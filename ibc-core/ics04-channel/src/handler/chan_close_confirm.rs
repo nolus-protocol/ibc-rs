@@ -64,13 +64,13 @@ where
                 .ok_or(ChannelError::MissingCounterparty)?;
             let conn_id_on_b = chan_end_on_b.connection_hops[0].clone();
 
-            IbcEvent::CloseConfirmChannel(CloseConfirm::new(
-                msg.port_id_on_b.clone(),
-                msg.chan_id_on_b.clone(),
-                port_id_on_a,
-                chan_id_on_a,
-                conn_id_on_b,
-            ))
+            IbcEvent::CloseConfirmChannel(CloseConfirm {
+                port_id_on_b: msg.port_id_on_b.clone().into(),
+                chan_id_on_b: msg.chan_id_on_b.clone().into(),
+                port_id_on_a: port_id_on_a.into(),
+                chan_id_on_a: chan_id_on_a.into(),
+                conn_id_on_b: conn_id_on_b.into(),
+            })
         };
         ctx_b.emit_ibc_event(IbcEvent::Message(MessageEvent::Channel))?;
         ctx_b.emit_ibc_event(core_event)?;

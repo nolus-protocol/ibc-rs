@@ -118,12 +118,12 @@ fn execute_impl<Ctx>(
 where
     Ctx: ExecutionContext,
 {
-    let event = IbcEvent::OpenAckConnection(OpenAck::new(
-        msg.conn_id_on_a.clone(),
-        vars.client_id_on_a().clone(),
-        msg.conn_id_on_b.clone(),
-        vars.client_id_on_b().clone(),
-    ));
+    let event = IbcEvent::OpenAckConnection(OpenAck {
+        conn_id_on_a: msg.conn_id_on_a.clone().into(),
+        client_id_on_a: vars.client_id_on_a().clone().into(),
+        conn_id_on_b: msg.conn_id_on_b.clone().into(),
+        client_id_on_b: vars.client_id_on_b().clone().into(),
+    });
     ctx_a.emit_ibc_event(IbcEvent::Message(MessageEvent::Connection))?;
     ctx_a.emit_ibc_event(event)?;
 

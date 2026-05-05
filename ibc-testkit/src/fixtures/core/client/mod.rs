@@ -58,34 +58,47 @@ mod tests {
         let tests: Vec<Test> = vec![
             Test {
                 event_kind: CreateClient::EVENT_KIND,
-                event: CreateClient::new(client_id.clone(), client_type.clone(), consensus_height)
-                    .into(),
+                event: CreateClient {
+                    client_id: client_id.clone().into(),
+                    client_type: client_type.clone().into(),
+                    consensus_height: consensus_height.into(),
+                }
+                .into(),
                 expected_keys: expected_keys[0..3].to_vec(),
                 expected_values: expected_values[0..3].to_vec(),
             },
             Test {
                 event_kind: UpdateClient::EVENT_KIND,
-                event: UpdateClient::new(
-                    client_id.clone(),
-                    client_type.clone(),
-                    consensus_height,
-                    consensus_heights,
-                    header.to_vec(),
-                )
+                event: UpdateClient {
+                    client_id: client_id.clone().into(),
+                    client_type: client_type.clone().into(),
+                    #[expect(deprecated)]
+                    consensus_height: consensus_height.into(),
+                    consensus_heights: consensus_heights.into(),
+                    header: header.to_vec().into(),
+                }
                 .into(),
                 expected_keys: expected_keys.clone(),
                 expected_values: expected_values.clone(),
             },
             Test {
                 event_kind: UpgradeClient::EVENT_KIND,
-                event: UpgradeClient::new(client_id.clone(), client_type.clone(), consensus_height)
-                    .into(),
+                event: UpgradeClient {
+                    client_id: client_id.clone().into(),
+                    client_type: client_type.clone().into(),
+                    consensus_height: consensus_height.into(),
+                }
+                .into(),
                 expected_keys: expected_keys[0..3].to_vec(),
                 expected_values: expected_values[0..3].to_vec(),
             },
             Test {
                 event_kind: ClientMisbehaviour::EVENT_KIND,
-                event: ClientMisbehaviour::new(client_id, client_type).into(),
+                event: ClientMisbehaviour {
+                    client_id: client_id.into(),
+                    client_type: client_type.into(),
+                }
+                .into(),
                 expected_keys: expected_keys[0..2].to_vec(),
                 expected_values: expected_values[0..2].to_vec(),
             },

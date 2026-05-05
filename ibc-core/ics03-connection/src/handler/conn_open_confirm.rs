@@ -105,12 +105,12 @@ where
     let client_id_on_b = vars.client_id_on_b();
     let conn_id_on_a = vars.conn_id_on_a()?;
 
-    let event = IbcEvent::OpenConfirmConnection(OpenConfirm::new(
-        msg.conn_id_on_b.clone(),
-        client_id_on_b.clone(),
-        conn_id_on_a.clone(),
-        client_id_on_a.clone(),
-    ));
+    let event = IbcEvent::OpenConfirmConnection(OpenConfirm {
+        conn_id_on_a: msg.conn_id_on_b.clone().into(),
+        client_id_on_a: client_id_on_b.clone().into(),
+        conn_id_on_b: conn_id_on_a.clone().into(),
+        client_id_on_b: client_id_on_a.clone().into(),
+    });
     ctx_b.emit_ibc_event(IbcEvent::Message(MessageEvent::Connection))?;
     ctx_b.emit_ibc_event(event)?;
     ctx_b.log_message("success: conn_open_confirm verification passed".to_string())?;

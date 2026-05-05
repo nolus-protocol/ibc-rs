@@ -92,14 +92,14 @@ where
             "success: channel open try with channel identifier: {chan_id_on_b}"
         ))?;
 
-        let core_event = IbcEvent::OpenTryChannel(OpenTry::new(
-            msg.port_id_on_b.clone(),
-            chan_id_on_b.clone(),
-            msg.port_id_on_a.clone(),
-            msg.chan_id_on_a.clone(),
-            conn_id_on_b,
-            version,
-        ));
+        let core_event = IbcEvent::OpenTryChannel(OpenTry {
+            port_id_on_b: msg.port_id_on_b.clone().into(),
+            chan_id_on_b: chan_id_on_b.clone().into(),
+            port_id_on_a: msg.port_id_on_a.clone().into(),
+            chan_id_on_a: msg.chan_id_on_a.clone().into(),
+            conn_id_on_b: conn_id_on_b.into(),
+            version_on_b: version.into(),
+        });
         ctx_b.emit_ibc_event(IbcEvent::Message(MessageEvent::Channel))?;
         ctx_b.emit_ibc_event(core_event)?;
 

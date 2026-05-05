@@ -1131,7 +1131,10 @@ fn test_update_client_events(fixture: Fixture) {
 
     assert_eq!(update_client_event.client_id(), &client_id);
     assert_eq!(update_client_event.client_type(), &mock_client_type());
-    assert_eq!(update_client_event.consensus_height(), &height);
+    #[expect(deprecated)]
+    {
+        assert_eq!(update_client_event.consensus_height(), &height);
+    }
     assert_eq!(update_client_event.consensus_heights(), &vec![height]);
     assert_eq!(update_client_event.header(), &header.to_vec());
 }

@@ -63,13 +63,13 @@ where
             let port_id_on_b = chan_end_on_a.counterparty().port_id.clone();
             let conn_id_on_a = chan_end_on_a.connection_hops[0].clone();
 
-            IbcEvent::OpenAckChannel(OpenAck::new(
-                msg.port_id_on_a.clone(),
-                msg.chan_id_on_a.clone(),
-                port_id_on_b,
-                msg.chan_id_on_b,
-                conn_id_on_a,
-            ))
+            IbcEvent::OpenAckChannel(OpenAck {
+                port_id_on_a: msg.port_id_on_a.clone().into(),
+                chan_id_on_a: msg.chan_id_on_a.clone().into(),
+                port_id_on_b: port_id_on_b.into(),
+                chan_id_on_b: msg.chan_id_on_b.into(),
+                conn_id_on_a: conn_id_on_a.into(),
+            })
         };
         ctx_a.emit_ibc_event(IbcEvent::Message(MessageEvent::Channel))?;
         ctx_a.emit_ibc_event(core_event)?;

@@ -40,11 +40,35 @@ macro_rules! define_attribute {
             }
         }
 
+        impl ::core::convert::AsRef<$inner_type> for $type {
+            fn as_ref(&self) -> &$inner_type {
+                &self.0
+            }
+        }
+
+        impl ::core::borrow::Borrow<$inner_type> for $type {
+            fn borrow(&self) -> &$inner_type {
+                &self.0
+            }
+        }
+
+        impl ::core::convert::From<$inner_type> for $type {
+            fn from(inner: $inner_type) -> Self {
+                Self(inner)
+            }
+        }
+
+        impl ::core::convert::From<$type> for $inner_type {
+            fn from($type(inner): $type) -> Self {
+                inner
+            }
+        }
+
         impl $crate::Newtype for $type {
             type Inner = $inner_type;
         }
 
-        impl From<$type> for $crate::EventAttribute {
+        impl ::core::convert::From<$type> for $crate::EventAttribute {
             fn from($type(inner): $type) -> Self {
                 ($key, $into(inner)).into()
             }
@@ -53,15 +77,17 @@ macro_rules! define_attribute {
         impl ::core::str::FromStr for $type {
             type Err = $crate::DecodingError;
 
-            fn from_str(s: &str) -> Result<Self, Self::Err> {
+            fn from_str(s: &str) -> ::core::result::Result<Self, Self::Err> {
                 $parse(s).map(Self)
             }
         }
 
-        impl TryFrom<$crate::EventAttribute> for $type {
+        impl ::core::convert::TryFrom<$crate::EventAttribute> for $type {
             type Error = <Self as ::core::str::FromStr>::Err;
 
-            fn try_from(value: $crate::EventAttribute) -> Result<Self, Self::Error> {
+            fn try_from(
+                value: $crate::EventAttribute,
+            ) -> ::core::result::Result<Self, Self::Error> {
                 let key_str = value
                     .key_str()
                     .map_err(|_| Self::Error::missing_raw_data("attribute key"))?;
@@ -109,27 +135,22 @@ macro_rules! define_event {
         pub struct $type {
             $(
                 $(#[$($attribute_meta),+])?
-                $attribute: $attribute_type,
+                pub $attribute: $attribute_type,
             )+
         }
 
         impl $type {
             pub const EVENT_KIND: &str = $event_kind;
 
-            pub const fn new($($attribute: <$attribute_type as $crate::Newtype>::Inner,)+) -> Self {
-                Self {
-                    $($attribute: <$attribute_type>::new($attribute),)+
-                }
-            }
-
             $(
+                $(#[$($attribute_meta),+])?
                 pub const fn $attribute(&self) -> &<$attribute_type as $crate::Newtype>::Inner {
                     &self.$attribute.0
                 }
             )+
         }
 
-        impl From<$type> for $crate::Event {
+        impl ::core::convert::From<$type> for $crate::Event {
             fn from(event: $type) -> Self {
                 Self {
                     kind: <$type>::EVENT_KIND.into(),
@@ -140,7 +161,7 @@ macro_rules! define_event {
             }
         }
 
-        impl<Kind, Attrs, AttrKey, AttrValue> TryFrom<(Kind, Attrs)> for $type
+        impl<Kind, Attrs, AttrKey, AttrValue> ::core::convert::TryFrom<(Kind, Attrs)> for $type
         where
             Kind: Into<String>,
             Attrs: IntoIterator<Item = (AttrKey, AttrValue)>,
@@ -149,7 +170,7 @@ macro_rules! define_event {
         {
             type Error = $crate::DecodingError;
 
-            fn try_from((kind, attributes): (Kind, Attrs)) -> Result<Self, Self::Error> {
+            fn try_from((kind, attributes): (Kind, Attrs)) -> ::core::result::Result<Self, Self::Error> {
                 {
                     let kind = kind.into();
 
@@ -191,10 +212,10 @@ macro_rules! define_event {
             }
         }
 
-        impl TryFrom<$crate::Event> for $type {
+        impl ::core::convert::TryFrom<$crate::Event> for $type {
             type Error = $crate::DecodingError;
 
-            fn try_from(event: $crate::Event) -> Result<Self, Self::Error> {
+            fn try_from(event: $crate::Event) -> ::core::result::Result<Self, Self::Error> {
                 (
                     event.kind,
                     event.attributes
@@ -209,7 +230,7 @@ macro_rules! define_event {
                                     .map_err(|e| Self::Error::invalid_raw_data(format_args!("attribute value: {e}")))?,
                             ))
                         })
-                        .collect::<Result<Vec<_>, Self::Error>>()?,
+                        .collect::<::core::result::Result<Vec<_>, Self::Error>>()?,
                 ).try_into()
             }
         }

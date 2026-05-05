@@ -86,18 +86,18 @@ where
         ctx_b.log_message("success: packet receive".to_string())?;
 
         let conn_id_on_b = &chan_end_on_b.connection_hops()[0];
-        let event = IbcEvent::ReceivePacket(ReceivePacket::new(
-            msg.packet.data.clone(),
-            msg.packet.timeout_height_on_b,
-            msg.packet.timeout_timestamp_on_b,
-            msg.packet.seq_on_a,
-            msg.packet.port_id_on_a.clone(),
-            msg.packet.chan_id_on_a.clone(),
-            msg.packet.port_id_on_b.clone(),
-            msg.packet.chan_id_on_b.clone(),
-            chan_end_on_b.ordering,
-            conn_id_on_b.clone(),
-        ));
+        let event = IbcEvent::ReceivePacket(ReceivePacket {
+            packet_data: msg.packet.data.clone().into(),
+            timeout_height_on_b: msg.packet.timeout_height_on_b.into(),
+            timeout_timestamp_on_b: msg.packet.timeout_timestamp_on_b.into(),
+            seq_on_a: msg.packet.seq_on_a.into(),
+            port_id_on_a: msg.packet.port_id_on_a.clone().into(),
+            chan_id_on_a: msg.packet.chan_id_on_a.clone().into(),
+            port_id_on_b: msg.packet.port_id_on_b.clone().into(),
+            chan_id_on_b: msg.packet.chan_id_on_b.clone().into(),
+            ordering: chan_end_on_b.ordering.into(),
+            conn_id_on_b: conn_id_on_b.clone().into(),
+        });
         ctx_b.emit_ibc_event(IbcEvent::Message(MessageEvent::Channel))?;
         ctx_b.emit_ibc_event(event)?;
 
