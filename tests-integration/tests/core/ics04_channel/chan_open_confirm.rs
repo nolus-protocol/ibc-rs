@@ -21,6 +21,8 @@ use ibc_testkit::testapp::ibc::core::types::LightClientState;
 use rstest::*;
 use test_log::test;
 
+use super::INIT_UPGRADE_SEQUENCE;
+
 pub struct Fixture {
     pub context: MockContext,
     pub router: MockRouter,
@@ -59,6 +61,7 @@ fn fixture() -> Fixture {
         Counterparty::new(msg.port_id_on_b.clone(), Some(ChannelId::zero())),
         vec![conn_id_on_b.clone()],
         Version::empty(),
+        INIT_UPGRADE_SEQUENCE.into(),
     )
     .unwrap();
 
@@ -191,6 +194,7 @@ fn chan_open_confirm_fail_channel_wrong_state(fixture: Fixture) {
         Counterparty::new(msg.port_id_on_b.clone(), Some(ChannelId::zero())),
         vec![conn_id_on_b.clone()],
         Version::empty(),
+        INIT_UPGRADE_SEQUENCE.into(),
     )
     .unwrap();
     let context = context

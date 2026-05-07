@@ -19,6 +19,8 @@ use ibc_testkit::testapp::ibc::clients::mock::client_state::client_type as mock_
 use ibc_testkit::testapp::ibc::core::router::MockRouter;
 use ibc_testkit::testapp::ibc::core::types::LightClientState;
 
+use crate::core::ics04_channel::UPGRADE_SEQUENCE;
+
 #[test]
 fn test_chan_close_init_validate() {
     let client_id = mock_client_type().build_client_id(24);
@@ -47,6 +49,7 @@ fn test_chan_close_init_validate() {
         ),
         vec![conn_id.clone()],
         Version::empty(),
+        UPGRADE_SEQUENCE.into(),
     )
     .unwrap();
 
@@ -105,6 +108,7 @@ fn test_chan_close_init_execute() {
         ),
         vec![conn_id.clone()],
         Version::empty(),
+        UPGRADE_SEQUENCE.into(),
     )
     .unwrap();
 

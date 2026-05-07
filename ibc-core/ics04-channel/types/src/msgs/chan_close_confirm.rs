@@ -1,7 +1,7 @@
 use ibc_core_client_types::Height;
 use ibc_core_commitment_types::commitment::CommitmentProofBytes;
 use ibc_core_host_types::error::DecodingError;
-use ibc_core_host_types::identifiers::{ChannelId, PortId};
+use ibc_core_host_types::identifiers::{ChannelId, PortId, Sequence};
 use ibc_primitives::prelude::*;
 use ibc_primitives::Signer;
 use ibc_proto::ibc::core::channel::v1::MsgChannelCloseConfirm as RawMsgChannelCloseConfirm;
@@ -27,6 +27,7 @@ pub struct MsgChannelCloseConfirm {
     pub proof_chan_end_on_a: CommitmentProofBytes,
     pub proof_height_on_a: Height,
     pub signer: Signer,
+    pub upgrade_sequence_on_a: Sequence,
 }
 
 impl Protobuf<RawMsgChannelCloseConfirm> for MsgChannelCloseConfirm {}
@@ -52,6 +53,7 @@ impl TryFrom<RawMsgChannelCloseConfirm> for MsgChannelCloseConfirm {
                     "msg channel close confirm proof height",
                 ))?,
             signer: raw_msg.signer.into(),
+            upgrade_sequence_on_a: raw_msg.counterparty_upgrade_sequence.into(),
         })
     }
 }
@@ -64,7 +66,7 @@ impl From<MsgChannelCloseConfirm> for RawMsgChannelCloseConfirm {
             proof_init: domain_msg.proof_chan_end_on_a.clone().into(),
             proof_height: Some(domain_msg.proof_height_on_a.into()),
             signer: domain_msg.signer.to_string(),
-            counterparty_upgrade_sequence: 0,
+            counterparty_upgrade_sequence: domain_msg.upgrade_sequence_on_a.into(),
         }
     }
 }

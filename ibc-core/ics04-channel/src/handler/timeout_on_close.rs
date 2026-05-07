@@ -99,6 +99,7 @@ where
             expected_counterparty,
             expected_conn_hops_on_b,
             chan_end_on_a.version().clone(),
+            *chan_end_on_a.upgrade_sequence(),
         )?;
 
         let chan_end_path_on_b = ChannelEndPath(port_id_on_b, chan_id_on_b.clone());

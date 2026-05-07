@@ -652,15 +652,31 @@ where
     ) {
         let proof_height_on_a = ctx_a.latest_height();
 
+        let channel_end_path_on_b = ChannelEndPath::new(&PortId::transfer(), &chan_id_on_b);
+
+        let channel_end_on_a = ctx_b
+            .ibc_store()
+            .channel_end(&channel_end_path_on_b)
+            .expect("channel end exists")
+            .remote;
+
         let proof_chan_end_on_a = ctx_a
             .ibc_store()
-            .get_proof(
-                proof_height_on_a,
-                &ChannelEndPath::new(&PortId::transfer(), &chan_id_on_b).into(),
-            )
+            .get_proof(proof_height_on_a, &channel_end_path_on_b.into())
             .expect("connection end exists")
             .try_into()
             .expect("value merkle proof");
+
+        let channel_end_path_on_a = ChannelEndPath::new(
+            &channel_end_on_a.port_id,
+            &channel_end_on_a.channel_id.expect("remote channel id"),
+        );
+
+        let upgrade_sequence_on_a = ctx_a
+            .ibc_store()
+            .channel_end(&channel_end_path_on_a)
+            .expect("channel end exists")
+            .upgrade_sequence;
 
         let msg_for_b = MsgEnvelope::Channel(ChannelMsg::CloseConfirm(MsgChannelCloseConfirm {
             port_id_on_b,
@@ -668,6 +684,7 @@ where
             proof_chan_end_on_a,
             proof_height_on_a,
             signer,
+            upgrade_sequence_on_a,
         }));
 
         ctx_b.deliver(msg_for_b).expect("success");
@@ -927,15 +944,31 @@ where
             .try_into()
             .expect("value merkle proof");
 
+        let channel_end_path_on_b = ChannelEndPath::new(&port_id_on_b, &chan_id_on_b);
+
+        let channel_end_on_a = ctx_b
+            .ibc_store()
+            .channel_end(&channel_end_path_on_b)
+            .expect("channel end exists")
+            .remote;
+
         let proof_close_on_b = ctx_b
             .ibc_store()
-            .get_proof(
-                proof_height_on_b,
-                &ChannelEndPath::new(&port_id_on_b, &chan_id_on_b).into(),
-            )
+            .get_proof(proof_height_on_b, &channel_end_path_on_b.into())
             .expect("channel end data exists")
             .try_into()
             .expect("value merkle proof");
+
+        let channel_end_path_on_a = ChannelEndPath::new(
+            &channel_end_on_a.port_id,
+            &channel_end_on_a.channel_id.expect("remote channel id"),
+        );
+
+        let upgrade_sequence_on_a = ctx_a
+            .ibc_store()
+            .channel_end(&channel_end_path_on_a)
+            .expect("channel end exists")
+            .upgrade_sequence;
 
         let msg_for_a = MsgEnvelope::Packet(PacketMsg::TimeoutOnClose(MsgTimeoutOnClose {
             next_seq_recv_on_b: packet.seq_on_a,
@@ -944,6 +977,7 @@ where
             proof_close_on_b,
             proof_height_on_b,
             signer,
+            upgrade_sequence_on_a,
         }));
 
         ctx_a.deliver(msg_for_a).expect("success");

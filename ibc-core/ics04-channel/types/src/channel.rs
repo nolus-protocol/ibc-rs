@@ -3,8 +3,8 @@
 use core::fmt::{Display, Error as FmtError, Formatter};
 use core::str::FromStr;
 
-use ibc_core_host_types::error::DecodingError;
 use ibc_core_host_types::identifiers::{ChannelId, ConnectionId, PortId};
+use ibc_core_host_types::{error::DecodingError, identifiers::Sequence};
 use ibc_primitives::prelude::*;
 use ibc_primitives::utils::PrettySlice;
 use ibc_proto::ibc::core::channel::v1::{
@@ -54,12 +54,6 @@ impl TryFrom<RawIdentifiedChannel> for IdentifiedChannelEnd {
     type Error = DecodingError;
 
     fn try_from(value: RawIdentifiedChannel) -> Result<Self, Self::Error> {
-        if value.upgrade_sequence != 0 {
-            return Err(DecodingError::invalid_raw_data(
-                "channel upgrade sequence expected to be 0",
-            ));
-        }
-
         let raw_channel_end = RawChannel {
             state: value.state,
             ordering: value.ordering,
@@ -92,7 +86,7 @@ impl From<IdentifiedChannelEnd> for RawIdentifiedChannel {
             version: value.channel_end.version.to_string(),
             port_id: value.port_id.to_string(),
             channel_id: value.channel_id.to_string(),
-            upgrade_sequence: 0,
+            upgrade_sequence: value.channel_end.upgrade_sequence.value(),
         }
     }
 }
@@ -119,6 +113,7 @@ pub struct ChannelEnd {
     pub remote: Counterparty,
     pub connection_hops: Vec<ConnectionId>,
     pub version: Version,
+    pub upgrade_sequence: Sequence,
 }
 
 impl Display for ChannelEnd {
@@ -157,8 +152,17 @@ impl TryFrom<RawChannel> for ChannelEnd {
 
         let version = value.version.into();
 
-        let channel = ChannelEnd::new(chan_state, chan_ordering, remote, connection_hops, version)
-            .map_err(|e| DecodingError::invalid_raw_data(format!("channel end: {e}")))?;
+        let upgrade_sequence = value.upgrade_sequence.into();
+
+        let channel = ChannelEnd::new(
+            chan_state,
+            chan_ordering,
+            remote,
+            connection_hops,
+            version,
+            upgrade_sequence,
+        )
+        .map_err(|e| DecodingError::invalid_raw_data(format!("channel end: {e}")))?;
 
         Ok(channel)
     }
@@ -193,6 +197,7 @@ impl ChannelEnd {
         remote: Counterparty,
         connection_hops: Vec<ConnectionId>,
         version: Version,
+        upgrade_sequence: Sequence,
     ) -> Self {
         Self {
             state,
@@ -200,6 +205,7 @@ impl ChannelEnd {
             remote,
             connection_hops,
             version,
+            upgrade_sequence,
         }
     }
 
@@ -210,9 +216,16 @@ impl ChannelEnd {
         remote: Counterparty,
         connection_hops: Vec<ConnectionId>,
         version: Version,
+        upgrade_sequence: Sequence,
     ) -> Result<Self, ChannelError> {
-        let channel_end =
-            Self::new_without_validation(state, ordering, remote, connection_hops, version);
+        let channel_end = Self::new_without_validation(
+            state,
+            ordering,
+            remote,
+            connection_hops,
+            version,
+            upgrade_sequence,
+        );
         channel_end.validate_basic()?;
         Ok(channel_end)
     }
@@ -255,11 +268,22 @@ impl ChannelEnd {
         &self.version
     }
 
+    pub fn upgrade_sequence(&self) -> &Sequence {
+        &self.upgrade_sequence
+    }
+
     pub fn validate_basic(&self) -> Result<(), ChannelError> {
         if self.state == State::Uninitialized {
             return Err(ChannelError::InvalidState {
                 expected: "Channel state to not be Uninitialized".to_string(),
                 actual: self.state.to_string(),
+            });
+        }
+
+        if !(self.state == State::Open || self.upgrade_sequence.is_zero()) {
+            return Err(ChannelError::InvalidState {
+                expected: "Channel upgrade sequence to be zero".to_string(),
+                actual: self.upgrade_sequence.to_string(),
             });
         }
 
