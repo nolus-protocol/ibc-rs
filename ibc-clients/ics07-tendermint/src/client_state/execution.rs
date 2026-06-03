@@ -133,6 +133,10 @@ where
 /// Note that this function is typically implemented as part of the
 /// [`ClientStateExecution`] trait, but has been made a standalone function
 /// in order to make the ClientState APIs more flexible.
+///
+/// This decodes the `Any` header and delegates to
+/// [`update_state_from_header`]. Callers that have already decoded the header
+/// can call that function directly to avoid decoding it again.
 pub fn update_state<E>(
     client_state: &ClientStateType,
     ctx: &mut E,
@@ -146,6 +150,32 @@ where
     <ConsensusStateType as TryFrom<E::ConsensusStateRef>>::Error: Debug + Into<ClientError>,
 {
     let header = TmHeader::try_from(header)?;
+    update_state_from_header(client_state, ctx, client_id, header)
+}
+
+/// Update the host store with a new client state from an already-decoded
+/// header, pruning old states from the store if need be.
+///
+/// This holds the body shared with [`update_state`]; the latter is a thin
+/// wrapper that decodes an `Any` header and delegates here. It is exposed so
+/// that a caller threading a single decoded header through verification,
+/// misbehaviour-checking, and the state update need not re-decode it.
+///
+/// Like [`update_state`], this performs no header verification of its own; the
+/// caller is responsible for having already verified the header (e.g. via
+/// `verify_client_message`) before committing it to the store.
+pub fn update_state_from_header<E>(
+    client_state: &ClientStateType,
+    ctx: &mut E,
+    client_id: &ClientId,
+    header: TmHeader,
+) -> Result<Vec<Height>, ClientError>
+where
+    E: ExtClientExecutionContext,
+    E::ClientStateRef: From<ClientStateType>,
+    ConsensusStateType: Convertible<E::ConsensusStateRef>,
+    <ConsensusStateType as TryFrom<E::ConsensusStateRef>>::Error: Debug + Into<ClientError>,
+{
     let header_height = header.height();
 
     prune_oldest_consensus_state(client_state, ctx, client_id)?;

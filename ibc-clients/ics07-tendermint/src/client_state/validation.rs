@@ -173,7 +173,7 @@ where
     match client_message.type_url.as_str() {
         TENDERMINT_HEADER_TYPE_URL => {
             let header = TmHeader::try_from(client_message)?;
-            check_for_misbehaviour_on_update(ctx, header, client_id, &client_state.latest_height)
+            check_for_misbehaviour_from_header(client_state, ctx, client_id, header)
         }
         TENDERMINT_MISBEHAVIOUR_TYPE_URL => {
             let misbehaviour = TmMisbehaviour::try_from(client_message)?;
@@ -181,6 +181,28 @@ where
         }
         _ => Err(ClientError::InvalidUpdateClientMessage),
     }
+}
+
+/// Check for misbehaviour on an already-decoded header as part of the client
+/// state validation process.
+///
+/// This holds the header branch shared with [`check_for_misbehaviour`]; the
+/// latter decodes an `Any` client message and delegates here when that message
+/// carries a header. It is exposed so that a caller threading a single decoded
+/// header through verification and the state update need not re-decode it for
+/// the misbehaviour check.
+pub fn check_for_misbehaviour_from_header<V>(
+    client_state: &ClientStateType,
+    ctx: &V,
+    client_id: &ClientId,
+    header: TmHeader,
+) -> Result<bool, ClientError>
+where
+    V: ExtClientValidationContext,
+    ConsensusStateType: Convertible<V::ConsensusStateRef>,
+    <ConsensusStateType as TryFrom<V::ConsensusStateRef>>::Error: Into<ClientError>,
+{
+    check_for_misbehaviour_on_update(ctx, header, client_id, &client_state.latest_height)
 }
 
 /// Query the status of the client state.
