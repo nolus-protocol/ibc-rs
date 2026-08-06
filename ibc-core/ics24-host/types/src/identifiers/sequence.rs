@@ -1,3 +1,5 @@
+use core::borrow::Borrow;
+
 use ibc_primitives::prelude::*;
 
 use crate::error::IdentifierError;
@@ -55,6 +57,12 @@ impl Sequence {
     }
 }
 
+impl Borrow<u64> for Sequence {
+    fn borrow(&self) -> &u64 {
+        &self.0
+    }
+}
+
 impl From<u64> for Sequence {
     fn from(seq: u64) -> Self {
         Sequence(seq)
@@ -70,5 +78,21 @@ impl From<Sequence> for u64 {
 impl core::fmt::Display for Sequence {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> Result<(), core::fmt::Error> {
         write!(f, "{}", self.0)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use alloc::collections::BTreeSet;
+
+    use super::*;
+
+    #[test]
+    fn test_set_lookup_by_borrowed_u64() {
+        let set: BTreeSet<Sequence> = [1, 2, 3].into_iter().map(Sequence::from).collect();
+
+        assert!(set.contains(&1u64));
+        assert!(set.contains(&3u64));
+        assert!(!set.contains(&99u64));
     }
 }
