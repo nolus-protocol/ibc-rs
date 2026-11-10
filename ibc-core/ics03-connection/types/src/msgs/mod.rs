@@ -12,6 +12,7 @@
 //! Another difference to ICS3 specs is that each message comprises an additional field called
 //! `signer` which is specific to Cosmos-SDK.
 
+#[cfg(feature = "schema")]
 use ibc_primitives::prelude::*;
 
 mod conn_open_ack;
