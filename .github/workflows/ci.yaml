@@ -1,0 +1,168 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# Copied from hermes-lite's CI and adapted: the fork has no private dependencies, so no job
+# holds a deploy key or any other secret.
+#
+# Each job runs one stage of ci/gate.sh, the gate a developer runs locally as
+# `ci/gate.sh all`. Jobs have no `needs:` and no job-level `if:` (a skipped required check
+# reports success), and there is no `concurrency:` block (a group cancels an older pending
+# run), so every run checks every commit to the end.
+#
+# The work runs in containers built from ci/Containerfile, with the checkout mounted
+# read-only, every capability but file ownership dropped, and each container removed when
+# it ends: the runner hosts run production, so no dependency's build script may run on
+# them, and no container that compiles or runs code has a network (`--network none`). The
+# image is built with --no-cache, so no layer carries over from an earlier run; only the
+# base image, pinned by digest, stays in the host's image store. The cargo registry,
+# Cargo.lock and target dir live only in the job. Image, container and directory names
+# carry the run id and the stage, so two runs or two jobs on one host never share one.
+# --init makes a cancelled step's signal stop the container, and a random stop-commands
+# token around each run keeps what the container prints from being read as workflow
+# commands.
+
+jobs:
+  fmt:
+    name: Check formatting
+    runs-on: ["self-hosted", "nolus-ci"]
+    timeout-minutes: 15
+    env:
+      IMAGE: localhost/ibc-rs-${{ github.run_id }}-${{ github.run_attempt }}/fmt
+      CONTAINER: ibc-rs-fmt-${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - name: Build container image
+        shell: bash
+        run: DOCKER_BUILDKIT=1 docker build --no-cache --target gate --tag "$IMAGE" --file ci/Containerfile ci
+
+      - name: Gate stage fmt
+        shell: bash
+        run: |
+          token=$(head -c 16 /dev/urandom | od -An -tx1 | tr -d ' \n')
+          echo "::stop-commands::$token"
+          status=0
+          docker container run --rm --init --name "$CONTAINER" --pids-limit 4096 \
+            --network none \
+            --cap-drop ALL --cap-add CHOWN --cap-add DAC_OVERRIDE --cap-add FOWNER \
+            --security-opt no-new-privileges \
+            --volume "$GITHUB_WORKSPACE:/src:ro" \
+            "$IMAGE" fmt 2>&1 || status=$?
+          printf '\n::%s::\n' "$token"
+          ((status == 0)) || exit "$status"
+
+      - name: Remove container and image
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          if docker container inspect "$CONTAINER" >/dev/null 2>&1; then
+            docker container rm --force "$CONTAINER"
+          fi
+          if docker image inspect "$IMAGE" >/dev/null 2>&1; then
+            docker image rm --force "$IMAGE"
+          fi
+
+  cargo:
+    # One job per consumer profile. fail-fast would cancel the sibling checks on the first
+    # failure, so it is off.
+    name: ${{ matrix.check }}
+    runs-on: ["self-hosted", "nolus-ci"]
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - check: Lint (ibc-solray profile)
+            stage: lint-solray
+          - check: Lint (hermes-lite profile)
+            stage: lint-hermes
+          - check: Test
+            stage: test
+    env:
+      IMAGE: localhost/ibc-rs-${{ github.run_id }}-${{ github.run_attempt }}/${{ matrix.stage }}
+      CONTAINER: ibc-rs-${{ matrix.stage }}-${{ github.run_id }}-${{ github.run_attempt }}
+      FETCH_CONTAINER: ibc-rs-${{ matrix.stage }}-fetch-${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - name: Build container image
+        shell: bash
+        run: DOCKER_BUILDKIT=1 docker build --no-cache --target gate --tag "$IMAGE" --file ci/Containerfile ci
+
+      - name: Fetch dependencies
+        # The only container with a network: it resolves a fresh Cargo.lock and runs
+        # `cargo fetch --locked`, neither of which runs crate code, into the job's own cargo
+        # directory.
+        shell: bash
+        run: |
+          mkdir -m 0700 "$RUNNER_TEMP/cargo"
+          token=$(head -c 16 /dev/urandom | od -An -tx1 | tr -d ' \n')
+          echo "::stop-commands::$token"
+          status=0
+          docker container run --rm --init --name "$FETCH_CONTAINER" --pids-limit 4096 \
+            --cap-drop ALL --cap-add CHOWN --cap-add DAC_OVERRIDE --cap-add FOWNER \
+            --security-opt no-new-privileges \
+            --volume "$GITHUB_WORKSPACE:/src:ro" \
+            --volume "$RUNNER_TEMP/cargo:/fetched" \
+            "$IMAGE" fetch /fetched 2>&1 || status=$?
+          printf '\n::%s::\n' "$token"
+          ((status == 0)) || exit "$status"
+
+      - name: Gate stage ${{ matrix.stage }}
+        # No network: the stage copies the fetched dependencies and Cargo.lock from a
+        # read-only mount and runs cargo offline.
+        shell: bash
+        env:
+          STAGE: ${{ matrix.stage }}
+        run: |
+          token=$(head -c 16 /dev/urandom | od -An -tx1 | tr -d ' \n')
+          echo "::stop-commands::$token"
+          status=0
+          docker container run --rm --init --name "$CONTAINER" --pids-limit 4096 \
+            --network none \
+            --cap-drop ALL --cap-add CHOWN --cap-add DAC_OVERRIDE --cap-add FOWNER \
+            --security-opt no-new-privileges \
+            --volume "$GITHUB_WORKSPACE:/src:ro" \
+            --volume "$RUNNER_TEMP/cargo:/fetched:ro" \
+            "$IMAGE" --fetched /fetched "$STAGE" 2>&1 || status=$?
+          printf '\n::%s::\n' "$token"
+          ((status == 0)) || exit "$status"
+
+      - name: Remove containers, fetched dependencies and image
+        # The fetch wrote the cargo directory as the container's root, so a container
+        # empties it before the runner removes what is left.
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          for name in "$FETCH_CONTAINER" "$CONTAINER"; do
+            if docker container inspect "$name" >/dev/null 2>&1; then
+              docker container rm --force "$name"
+            fi
+          done
+          dir="$RUNNER_TEMP/cargo"
+          if [[ -d "$dir" ]] && docker image inspect "$IMAGE" >/dev/null 2>&1; then
+            docker container run --rm --network none \
+              --cap-drop ALL --cap-add DAC_OVERRIDE --cap-add FOWNER \
+              --security-opt no-new-privileges \
+              --entrypoint /usr/bin/find \
+              --volume "$dir:/cargo" \
+              "$IMAGE" /cargo -mindepth 1 -delete
+          fi
+          rm -rf "$dir"
+          if docker image inspect "$IMAGE" >/dev/null 2>&1; then
+            docker image rm --force "$IMAGE"
+          fi
