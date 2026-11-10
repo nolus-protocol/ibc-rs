@@ -14,22 +14,23 @@ permissions:
 # `ci/gate.sh all`. Jobs have no `needs:`, and there is no `concurrency:` block (a group
 # cancels an older pending run), so every run checks every commit to the end.
 #
-# The repository is public and the runner hosts run production. Org and repository policy
-# make a maintainer approve every outside contributor's run; on top of that, each job runs
-# only for a branch of this repository, so an approved fork PR runs nothing on the pool
-# unless it edits this file, which its diff shows.
+# The repository is public and the runner hosts are shared and long-lived. Org and
+# repository policy make a maintainer approve every outside contributor's run; on top of
+# that, each job runs only for a branch of this repository, so an approved fork PR runs
+# nothing on the pool unless it changes the workflows under .github/workflows, which its
+# diff shows.
 #
 # The work runs in containers built from ci/Containerfile, with the checkout mounted
 # read-only, every capability but file ownership dropped, and each container removed when
-# it ends: the runner hosts run production, so no dependency's build script may run on
-# them, and no container that compiles or runs code has a network (`--network none`). The
-# image is built with --no-cache, so no layer carries over from an earlier run; only the
-# base image, pinned by digest, stays in the host's image store. The cargo registry,
-# Cargo.lock and target dir live only in the job. Image, container and directory names
-# carry the run id and the stage, so two runs or two jobs on one host never share one.
-# --init makes a cancelled step's signal stop the container, and a random stop-commands
-# token around each run keeps what the container prints from being read as workflow
-# commands.
+# it ends: the runner hosts are shared and long-lived, so no dependency's build script may
+# run on them, and no container that compiles or runs code has a network (`--network
+# none`). The image is built with --no-cache, so no layer carries over from an earlier
+# run; only the base image, pinned by digest, stays in the host's image store. The cargo
+# registry, Cargo.lock and target dir live only in the job. Image and container names
+# carry the run id and the stage, and the cargo directory sits in the job's own
+# RUNNER_TEMP, so two runs or two jobs on one host never share one. --init makes a
+# cancelled step's signal stop the container, and a random stop-commands token around each
+# run keeps what the container prints from being read as workflow commands.
 
 jobs:
   fmt:
@@ -78,8 +79,8 @@ jobs:
           fi
 
   cargo:
-    # One job per consumer profile. fail-fast would cancel the sibling checks on the first
-    # failure, so it is off.
+    # One job per lint profile, plus the tests. fail-fast would cancel the sibling checks
+    # on the first failure, so it is off.
     name: ${{ matrix.check }}
     if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ["self-hosted", "nolus-ci"]

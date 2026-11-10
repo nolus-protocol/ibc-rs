@@ -14,9 +14,10 @@
 # two halves into two containers. The fetch container has the network; it runs only
 # `cargo generate-lockfile` and `cargo fetch --locked`, which run no crate code, with DIR as
 # CARGO_HOME, and leaves the resolved Cargo.lock in DIR. The stage container has no network:
-# it copies DIR's registry, git checkouts and Cargo.lock in and runs cargo offline, so every
-# stage of a run checks the same resolution and no build script, proc macro or test can reach
-# the network.
+# it copies DIR's registry and Cargo.lock in and runs cargo offline, so a stage checks exactly
+# what its own job's fetch resolved, and no build script, proc macro or test can reach the
+# network. Each CI job fetches on its own, so two jobs of one run resolve differently only if
+# a crate is published between them.
 
 set -euo pipefail
 
@@ -90,16 +91,11 @@ fetch_into() {
 use_fetched_dependencies() {
     local dir=$1
     local home=${CARGO_HOME:?CARGO_HOME names where the fetched dependencies go}
-    local sub
     [[ -f "$dir/Cargo.lock" && -d "$dir/registry" ]] ||
         { echo "error: $dir holds no Cargo.lock and registry: did the fetch run?" >&2; return 1; }
     cp "$dir/Cargo.lock" Cargo.lock
-    # No dependency comes from git today, so the fetch writes no git directory.
-    for sub in registry git; do
-        [[ -d "$dir/$sub" ]] || continue
-        mkdir -p "$home/$sub"
-        cp -a --no-preserve=ownership "$dir/$sub/." "$home/$sub/"
-    done
+    mkdir -p "$home/registry"
+    cp -a --no-preserve=ownership "$dir/registry/." "$home/registry/"
     export CARGO_NET_OFFLINE=true
 }
 
