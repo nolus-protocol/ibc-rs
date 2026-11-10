@@ -18,6 +18,7 @@ use ibc_core_connection_types::msgs::{
     CONN_OPEN_INIT_TYPE_URL, CONN_OPEN_TRY_TYPE_URL,
 };
 use ibc_core_host_types::error::DecodingError;
+#[cfg(feature = "schema")]
 use ibc_primitives::prelude::*;
 use ibc_proto::google::protobuf::Any;
 use ibc_proto::Protobuf;

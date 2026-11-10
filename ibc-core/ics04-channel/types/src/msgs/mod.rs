@@ -23,6 +23,7 @@ pub use chan_open_confirm::*;
 pub use chan_open_init::*;
 pub use chan_open_try::*;
 use ibc_core_host_types::identifiers::*;
+#[cfg(feature = "schema")]
 use ibc_primitives::prelude::*;
 pub use recv_packet::*;
 pub use timeout::*;
