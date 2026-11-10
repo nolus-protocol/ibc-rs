@@ -2,12 +2,11 @@
 ///
 /// For example, Rust standard library and Tendermint types.
 use core::{ops::Add, time::Duration};
-use std::{string::ToString, vec::Vec};
+use std::string::ToString;
+use std::vec::Vec;
 
-use borsh::{
-    io::{Error as BorshError, ErrorKind, Read, Result, Write},
-    BorshDeserialize, BorshSerialize,
-};
+use borsh::io::{Error as BorshError, ErrorKind, Read, Result, Write};
+use borsh::{BorshDeserialize, BorshSerialize};
 use tendermint::{Error as TmError, Hash, Time};
 
 pub fn serialize_duration<W: Write>(period: &Duration, writer: &mut W) -> Result<()> {
