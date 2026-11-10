@@ -11,9 +11,13 @@ permissions:
 # holds a deploy key or any other secret.
 #
 # Each job runs one stage of ci/gate.sh, the gate a developer runs locally as
-# `ci/gate.sh all`. Jobs have no `needs:` and no job-level `if:` (a skipped required check
-# reports success), and there is no `concurrency:` block (a group cancels an older pending
-# run), so every run checks every commit to the end.
+# `ci/gate.sh all`. Jobs have no `needs:`, and there is no `concurrency:` block (a group
+# cancels an older pending run), so every run checks every commit to the end.
+#
+# The repository is public and the runner hosts run production. Org and repository policy
+# make a maintainer approve every outside contributor's run; on top of that, each job runs
+# only for a branch of this repository, so an approved fork PR runs nothing on the pool
+# unless it edits this file, which its diff shows.
 #
 # The work runs in containers built from ci/Containerfile, with the checkout mounted
 # read-only, every capability but file ownership dropped, and each container removed when
@@ -30,6 +34,7 @@ permissions:
 jobs:
   fmt:
     name: Check formatting
+    if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ["self-hosted", "nolus-ci"]
     timeout-minutes: 15
     env:
@@ -76,6 +81,7 @@ jobs:
     # One job per consumer profile. fail-fast would cancel the sibling checks on the first
     # failure, so it is off.
     name: ${{ matrix.check }}
+    if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ["self-hosted", "nolus-ci"]
     timeout-minutes: 45
     strategy:
