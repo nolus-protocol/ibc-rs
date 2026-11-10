@@ -1,28 +1,38 @@
 #!/usr/bin/env bash
 #
 # The fork's quality gate, copied from hermes-lite's ci/gate.sh and adapted. CI runs one
-# stage per check; a developer runs them all:
+# stage per check; a developer runs the compile stages together, and the audit on its own:
 #
-#   RUSTFMT_TOOLCHAIN=nightly ci/gate.sh all     # every stage, in order, from the repository
+#   RUSTFMT_TOOLCHAIN=nightly ci/gate.sh all     # fmt, lint-solray, lint-hermes, test, in order
 #   ci/gate.sh <stage>                 # fmt | lint-solray | lint-hermes | test
+#   ci/gate.sh audit                   # replace Cargo.lock with a fresh resolution, audit it
 #   ci/gate.sh fetch DIR               # CI: resolve a fresh Cargo.lock, fetch what it names into DIR
 #   ci/gate.sh --fetched DIR <stage>   # CI: run a stage offline on what `fetch` wrote to DIR
 #
-# The stages check what the consumers build, not every feature combination: the fork has no
-# committed Cargo.lock and no target of its own beyond them. Locally cargo resolves with the
-# developer's Cargo.lock (`cargo generate-lockfile` creates one) and network. CI splits the
-# two halves into two containers. The fetch container has the network; it runs only
-# `cargo generate-lockfile` and `cargo fetch --locked`, which run no crate code, with DIR as
-# CARGO_HOME, and leaves the resolved Cargo.lock in DIR. The stage container has no network:
-# it copies DIR's registry and Cargo.lock in and runs cargo offline, so a stage checks exactly
-# what its own job's fetch resolved, and no build script, proc macro or test can reach the
-# network. Each CI job fetches on its own, so two jobs of one run resolve differently only if
-# a crate is published between them.
+# The compile stages check what the consumers build, not every feature combination: the fork
+# has no committed Cargo.lock and no target of its own beyond them. Locally cargo resolves
+# with the developer's Cargo.lock (`cargo generate-lockfile` creates one) and network. CI
+# splits the two halves into two containers. The fetch container has the network; it runs
+# only `cargo generate-lockfile` and `cargo fetch --locked`, which run no crate code, with DIR
+# as CARGO_HOME, and leaves the resolved Cargo.lock in DIR. The stage container has no
+# network: it copies DIR's registry and Cargo.lock in and runs cargo offline, so a stage
+# checks exactly what its own job's fetch resolved, and no build script, proc macro or test
+# can reach the network. Each CI job fetches on its own, so two jobs of one run resolve
+# differently only if a crate is published between them.
+#
+# The audit checks a fresh resolution, made the way `fetch` makes one, against the RustSec
+# advisory database. `cargo generate-lockfile` and cargo-audit read manifests, the registry
+# index, Cargo.lock and the database and run no crate code, so CI runs the audit in one
+# container that keeps the network, and cargo-audit fetches the database itself. It fails on
+# vulnerabilities only: cargo-audit reports unmaintained, unsound and yanked crates as
+# warnings and exits zero on them unless told to deny them. It stays out of `all`, which
+# checks the developer's own Cargo.lock: the audit needs the network and cargo-audit (the
+# image's `audit` target), and it replaces Cargo.lock.
 
 set -euo pipefail
 
 usage() {
-    echo "usage: ci/gate.sh fetch DIR | [--fetched DIR] all|fmt|lint-solray|lint-hermes|test" >&2
+    echo "usage: ci/gate.sh fetch DIR | audit | [--fetched DIR] all|fmt|lint-solray|lint-hermes|test" >&2
     exit 2
 }
 
@@ -121,6 +131,11 @@ stage_test() {
     cargo test --locked "${TEST_CRATES[@]/#/--package=}"
 }
 
+stage_audit() {
+    cargo generate-lockfile
+    cargo audit
+}
+
 fetched=
 if [[ "${1:-}" == --fetched ]]; then
     [[ $# -ge 2 ]] || usage
@@ -130,6 +145,7 @@ fi
 [[ $# -ge 1 ]] || usage
 case "$1" in
     fetch) [[ -z "$fetched" && $# -eq 2 ]] || usage ;;
+    audit) [[ -z "$fetched" && $# -eq 1 ]] || usage; stages=(audit) ;;
     all) [[ $# -eq 1 ]] || usage; stages=(fmt lint-solray lint-hermes test) ;;
     fmt | lint-solray | lint-hermes | test) [[ $# -eq 1 ]] || usage; stages=("$1") ;;
     *) usage ;;
@@ -153,6 +169,7 @@ for stage in "${stages[@]}"; do
         lint-solray) stage_lint_solray ;;
         lint-hermes) stage_lint_hermes ;;
         test) stage_test ;;
+        audit) stage_audit ;;
     esac
 done
 echo "== gate passed: ${stages[*]}"

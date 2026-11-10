@@ -10,8 +10,9 @@ permissions:
 # Copied from hermes-lite's CI and adapted: the fork has no private dependencies, so no job
 # holds a deploy key or any other secret.
 #
-# Each job runs one stage of ci/gate.sh, the gate a developer runs locally as
-# `ci/gate.sh all`. Jobs have no `needs:`, and there is no `concurrency:` block (a group
+# Each job runs one stage of ci/gate.sh: the compile stages a developer runs locally as
+# `ci/gate.sh all`, and the audit of a fresh resolution against the RustSec advisory
+# database. Jobs have no `needs:`, and there is no `concurrency:` block (a group
 # cancels an older pending run), so every run checks every commit to the end.
 #
 # The repository is public and the runner hosts are shared and long-lived. Org and
@@ -24,13 +25,16 @@ permissions:
 # read-only, every capability but file ownership dropped, and each container removed when
 # it ends: the runner hosts are shared and long-lived, so no dependency's build script may
 # run on them, and no container that compiles or runs code has a network (`--network
-# none`). The image is built with --no-cache, so no layer carries over from an earlier
-# run; only the base image, pinned by digest, stays in the host's image store. The cargo
-# registry, Cargo.lock and target dir live only in the job. Image and container names
-# carry the run id and the stage, and the cargo directory sits in the job's own
-# RUNNER_TEMP, so two runs or two jobs on one host never share one. --init makes a
-# cancelled step's signal stop the container, and a random stop-commands token around each
-# run keeps what the container prints from being read as workflow commands.
+# none`). The containers that keep the network, the fetch steps and the audit, run only
+# cargo and cargo-audit commands that run no crate code. The image is built with
+# --no-cache, so no layer carries over from an earlier run; only the base image, pinned by
+# digest, stays in the host's image store, and the audit image's cargo-audit download,
+# pinned by sha256, in its build cache. The cargo registry, Cargo.lock and target dir live
+# only in the job. Image and container names carry the run id and the stage, and the cargo
+# directory sits in the job's own RUNNER_TEMP, so two runs or two jobs on one host never
+# share one. --init makes a cancelled step's signal stop the container, and a random
+# stop-commands token around each run keeps what the container prints from being read as
+# workflow commands.
 
 jobs:
   fmt:
@@ -110,7 +114,7 @@ jobs:
         run: DOCKER_BUILDKIT=1 docker build --no-cache --target gate --tag "$IMAGE" --file ci/Containerfile ci
 
       - name: Fetch dependencies
-        # The only container with a network: it resolves a fresh Cargo.lock and runs
+        # The job's only container with a network: it resolves a fresh Cargo.lock and runs
         # `cargo fetch --locked`, neither of which runs crate code, into the job's own cargo
         # directory.
         shell: bash
@@ -170,6 +174,53 @@ jobs:
               "$IMAGE" /cargo -mindepth 1 -delete
           fi
           rm -rf "$dir"
+          if docker image inspect "$IMAGE" >/dev/null 2>&1; then
+            docker image rm --force "$IMAGE"
+          fi
+
+  audit:
+    name: Audit
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ["self-hosted", "nolus-ci"]
+    timeout-minutes: 15
+    env:
+      IMAGE: localhost/ibc-rs-${{ github.run_id }}-${{ github.run_attempt }}/audit
+      CONTAINER: ibc-rs-audit-${{ github.run_id }}-${{ github.run_attempt }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - name: Build container image
+        # Only this job builds the target that carries cargo-audit.
+        shell: bash
+        run: DOCKER_BUILDKIT=1 docker build --no-cache --target audit --tag "$IMAGE" --file ci/Containerfile ci
+
+      - name: Gate stage audit
+        # Keeps the network: the stage resolves a fresh Cargo.lock and cargo-audit fetches
+        # the advisory database, and neither runs crate code.
+        shell: bash
+        run: |
+          token=$(head -c 16 /dev/urandom | od -An -tx1 | tr -d ' \n')
+          echo "::stop-commands::$token"
+          status=0
+          docker container run --rm --init --name "$CONTAINER" --pids-limit 4096 \
+            --cap-drop ALL --cap-add CHOWN --cap-add DAC_OVERRIDE --cap-add FOWNER \
+            --security-opt no-new-privileges \
+            --volume "$GITHUB_WORKSPACE:/src:ro" \
+            "$IMAGE" audit 2>&1 || status=$?
+          printf '\n::%s::\n' "$token"
+          ((status == 0)) || exit "$status"
+
+      - name: Remove container and image
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          if docker container inspect "$CONTAINER" >/dev/null 2>&1; then
+            docker container rm --force "$CONTAINER"
+          fi
           if docker image inspect "$IMAGE" >/dev/null 2>&1; then
             docker image rm --force "$IMAGE"
           fi
