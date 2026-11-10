@@ -3,8 +3,8 @@
 use core::fmt::{Display, Error as FmtError, Formatter};
 use core::str::FromStr;
 
-use ibc_core_host_types::identifiers::{ChannelId, ConnectionId, PortId};
-use ibc_core_host_types::{error::DecodingError, identifiers::Sequence};
+use ibc_core_host_types::error::DecodingError;
+use ibc_core_host_types::identifiers::{ChannelId, ConnectionId, PortId, Sequence};
 use ibc_primitives::prelude::*;
 use ibc_primitives::utils::PrettySlice;
 use ibc_proto::ibc::core::channel::v1::{

@@ -1,9 +1,8 @@
-use std::{string::ToString, vec::Vec};
+use std::string::ToString;
+use std::vec::Vec;
 
-use borsh::{
-    io::{Error as BorshError, ErrorKind, Read, Result, Write},
-    BorshDeserialize, BorshSerialize,
-};
+use borsh::io::{Error as BorshError, ErrorKind, Read, Result, Write};
+use borsh::{BorshDeserialize, BorshSerialize};
 use ics23::ProofSpec;
 use prost::Message;
 
