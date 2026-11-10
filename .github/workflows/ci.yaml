@@ -193,7 +193,6 @@ jobs:
           persist-credentials: false
 
       - name: Build container image
-        # Only this job builds the target that carries cargo-audit.
         shell: bash
         run: DOCKER_BUILDKIT=1 docker build --no-cache --target audit --tag "$IMAGE" --file ci/Containerfile ci
 

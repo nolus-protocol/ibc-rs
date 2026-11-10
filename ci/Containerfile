@@ -22,11 +22,11 @@ WORKDIR /work
 ENTRYPOINT ["/bin/bash", "-c", "cp -a --no-preserve=ownership /src/. /work && exec /work/ci/gate.sh \"$@\"", "gate"]
 
 # The gate image plus cargo-audit, for `ci/gate.sh audit` only, so the other stages' images
-# stay as they are. The release binary is pinned by version and sha256 (both read
-# 2026-11-10) rather than built with `cargo install`, which would compile cargo-audit's
-# dependencies, build scripts included, in an image build that has the network. It is the
-# x86_64 build because every nolus-ci runner is X64. A version bump changes the URL and the
-# checksum together; a download that does not match fails the build.
+# stay as they are. The release binary is pinned by version and sha256 rather than built
+# with `cargo install`, which would compile cargo-audit's dependencies, build scripts
+# included, in an image build that has the network. It is the x86_64 build because every
+# nolus-ci runner is X64. A version bump changes the URL, the checksum and the tar member
+# path together.
 FROM gate AS audit
 ADD --checksum=sha256:7fb9497f8594b389e5fce5ef9b92db08432996895b2e0c5a0167a69ed445c428 \
     https://github.com/rustsec/rustsec/releases/download/cargo-audit/v0.22.2/cargo-audit-x86_64-unknown-linux-musl-v0.22.2.tgz \
