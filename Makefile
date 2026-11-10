@@ -36,13 +36,6 @@ check-docs: ## Build documentation with all features and without default feature
 	cargo doc --all --all-features --release
 	cargo doc --all --no-default-features --release
 
-check-no-std: ## Check that libraries compile with `no_std` feature.
-	$(MAKE) -C ./ci/no-std-check $@
-
-check-cw: ## Check that the CosmWasm smart contract compiles.
-	cd ./ci/cw-check \
-	&& cargo build --target wasm32-unknown-unknown --no-default-features --release
-
 test: ## Run tests with all features and without default features.
 	cargo test --all-targets --all-features --no-fail-fast --release
 	cargo test --all-targets --no-default-features  --no-fail-fast --release

@@ -1,0 +1,36 @@
+# The CI gate image: the pinned toolchains plus what ci/gate.sh calls. Copied from
+# hermes-lite's CI and adapted: the fork has no private dependencies, so no git, ssh or keys.
+#
+# The base image is pinned by tag and digest (read 2026-11-10): the tag alone is mutable, and
+# a rebuilt upstream image could move the compiler and its lints with no diff to point at.
+# Its rustc must equal the workspace `rust-version` (the gate asserts it), so a toolchain bump
+# changes this line and `rust-version` together, and clears what the new clippy reports in
+# the same PR.
+ARG rust_image="docker.io/library/rust:1.89.0-slim-bookworm@sha256:d7fc7de78bb8c1469933aeecbf801314d30d7d6e9f0578bba4cfa285bfa37fe6"
+
+FROM ${rust_image} AS gate
+# rustfmt.toml sets unstable options (group_imports, imports_granularity) that only a nightly
+# rustfmt applies; a dated nightly keeps the formatting verdict from moving between runs.
+ARG rustfmt_toolchain=nightly-2026-11-10
+RUN rustup component add clippy \
+    && rustup toolchain install "$rustfmt_toolchain" --no-self-update --profile minimal --component rustfmt
+ENV CARGO_TERM_COLOR=always CARGO_INCREMENTAL=0 CARGO_TARGET_DIR=/tmp/target \
+    RUSTFMT_TOOLCHAIN=${rustfmt_toolchain}
+WORKDIR /work
+# The checkout is mounted read-only at /src. The gate runs on a copy the container owns, so
+# nothing it runs reaches the host's workspace or its .git.
+ENTRYPOINT ["/bin/bash", "-c", "cp -a --no-preserve=ownership /src/. /work && exec /work/ci/gate.sh \"$@\"", "gate"]
+
+# The gate image plus cargo-audit, for `ci/gate.sh audit` only, so the other stages' images
+# stay as they are. The release binary is pinned by version and sha256 rather than built
+# with `cargo install`, which would compile cargo-audit's dependencies, build scripts
+# included, in an image build that has the network. It is the x86_64 build because every
+# nolus-ci runner is X64. A version bump changes the URL, the checksum and the tar member
+# path together.
+FROM gate AS audit
+ADD --checksum=sha256:7fb9497f8594b389e5fce5ef9b92db08432996895b2e0c5a0167a69ed445c428 \
+    https://github.com/rustsec/rustsec/releases/download/cargo-audit/v0.22.2/cargo-audit-x86_64-unknown-linux-musl-v0.22.2.tgz \
+    /tmp/cargo-audit.tgz
+RUN tar -xzf /tmp/cargo-audit.tgz -C /usr/local/cargo/bin --strip-components=1 \
+        cargo-audit-x86_64-unknown-linux-musl-v0.22.2/cargo-audit \
+    && rm /tmp/cargo-audit.tgz

@@ -5,10 +5,8 @@
 use core::fmt::{self, Display, Formatter};
 
 use data_types_macros::{define_attribute, define_event};
-use ibc_core_host_types::{
-    error::DecodingError,
-    identifiers::{ClientId, ClientType},
-};
+use ibc_core_host_types::error::DecodingError;
+use ibc_core_host_types::identifiers::{ClientId, ClientType};
 use ibc_primitives::prelude::*;
 use subtle_encoding::hex;
 
@@ -122,7 +120,8 @@ where
 
 #[cfg(test)]
 mod tests {
-    use core::{any::Any, str::FromStr as _};
+    use core::any::Any;
+    use core::str::FromStr as _;
 
     use rstest::*;
     use tendermint::abci::{Event, EventAttribute};

@@ -12,10 +12,8 @@ use ibc_core_host::types::path::{
     ClientConnectionPath, ClientConsensusStatePath, ConnectionPath, Path,
 };
 use ibc_core_host::{ExecutionContext, ValidationContext};
-use ibc_primitives::{
-    prelude::{vec, ToString},
-    proto::{Any, Protobuf},
-};
+use ibc_primitives::prelude::{vec, ToString};
+use ibc_primitives::proto::{Any, Protobuf};
 
 pub fn validate<Ctx>(ctx_b: &Ctx, msg: MsgConnectionOpenTry) -> Result<(), ConnectionError>
 where
