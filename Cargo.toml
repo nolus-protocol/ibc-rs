@@ -39,10 +39,6 @@ members = [
   "tests-integration",
 ]
 
-exclude = [
-  "ci/cw-check",
-]
-
 [workspace.package]
 version      = "0.57.0"
 license      = "Apache-2.0"
