@@ -9,7 +9,7 @@ pub fn calculate_block_delay(
     if max_expected_time_per_block == 0 {
         return 0;
     }
-    if delay_period_time % max_expected_time_per_block == 0 {
+    if delay_period_time.is_multiple_of(max_expected_time_per_block) {
         return delay_period_time / max_expected_time_per_block;
     }
 

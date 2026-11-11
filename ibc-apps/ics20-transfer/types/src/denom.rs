@@ -188,11 +188,7 @@ impl TracePath {
         let mut trace_prefixes = vec![];
         let mut current_remaining_opt = Some(s);
 
-        loop {
-            let Some(current_remaining_s) = current_remaining_opt else {
-                break;
-            };
-
+        while let Some(current_remaining_s) = current_remaining_opt {
             let Some((trace_prefix, next_remaining_opt)) = TracePrefix::strip(current_remaining_s)
             else {
                 break;
