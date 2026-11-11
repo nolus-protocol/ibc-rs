@@ -2,7 +2,7 @@
 
 #![expect(deprecated)]
 
-use core::fmt::{self, Display, Formatter};
+use core::fmt::{self, Display as _};
 
 use data_types_macros::{define_attribute, define_event};
 use ibc_core_host_types::error::DecodingError;
@@ -39,7 +39,22 @@ define_attribute!(
 define_attribute!(
     "consensus_heights" => ConsensusHeightsAttribute(Vec<Height>) {
         friendly_name = "consensus heights",
-        into = |heights: Vec<Height>| DisplayList(&heights).to_string(),
+        into = |heights: Vec<Height>| {
+            fmt::from_fn(|f| {
+                if let [head, tail @ ..] = heights.as_slice() {
+                    head.fmt(f)?;
+
+                    for element in tail {
+                        f.write_str(",")?;
+
+                        element.fmt(f)?;
+                    }
+                }
+
+                Ok(())
+            })
+            .to_string()
+        },
         parse = |heights: &str| heights.split(',').map(Height::from_str).collect::<Result<_, _>>(),
     }
 );
@@ -94,29 +109,6 @@ define_event!(
         consensus_height: ConsensusHeightAttribute,
     }
 );
-
-struct DisplayList<'r, T>(&'r [T])
-where
-    T: Display;
-
-impl<T> Display for DisplayList<'_, T>
-where
-    T: Display,
-{
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        if let [head, tail @ ..] = self.0 {
-            head.fmt(f)?;
-
-            for element in tail {
-                f.write_str(",")?;
-
-                element.fmt(f)?;
-            }
-        }
-
-        Ok(())
-    }
-}
 
 #[cfg(test)]
 mod tests {
